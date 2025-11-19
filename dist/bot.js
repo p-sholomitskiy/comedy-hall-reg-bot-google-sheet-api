@@ -366,7 +366,7 @@ bot.on("text", async (ctx) => {
                         ? `${b.party} — ${totalSeats} мест`
                         : b.party,
                     availableSeats: b.available,
-                    currentSeats: totalSeats,
+                    currentSeats: totalSeats || 0,
                 });
             });
             state.step = "select_party";
