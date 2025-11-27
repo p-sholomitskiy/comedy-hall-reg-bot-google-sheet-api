@@ -90,6 +90,11 @@ function refreshCache() {
     const sheets = sheetsAll.slice(0, -2);
     const result = [];
     sheets.forEach((sheet) => {
+        const party = sheet.getRange('H1').getValue();
+        if (party.includes('❌')) {
+            console.log('❌');
+            return;
+        }
         const values = sheet.getDataRange().getValues();
         if (values.length < 2)
             return;

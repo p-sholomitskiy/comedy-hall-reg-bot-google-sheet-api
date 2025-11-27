@@ -83,16 +83,12 @@ const welcomeMessage = `Здравствуйте!
 Stand Up Comedy Hall ❤️`;
 
 const phoneRequestMessages = [
-  'Пожалуйста, введите ваш номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX. 📞',
-  'Нам нужен ваш номер телефона для продолжения. Введите его в формате: 375XXXXXXXXX или 79XXXXXXXXX. 📱',
-  'Укажите номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX, чтобы мы могли продолжить. ☎️',
-  'Введите ваш номер телефона, пожалуйста, в формате: 375XXXXXXXXX или 79XXXXXXXXX. 🔢',
-  'Укажите номер телефона, пожалуйста, в формате: 375XXXXXXXXX или 79XXXXXXXXX. Без него мы не справимся. 🤖',
-  'Нам нужен Ваш номер телефона, чтобы всё получилось. Напишите его в формате: 375XXXXXXXXX или 79XXXXXXXXX! 📲',
-  'Укажите номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX, чтобы мы могли Вам помочь. 👇',
-  'Укажите номер телефона, пожалуйста, в формате: 375XXXXXXXXX или 79XXXXXXXXX. Иначе мы не сможем двигаться дальше! 🚶‍♂️',
-  'Пожалуйста, укажите ваш номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX. 📇',
-  'Введите номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX, чтобы мы могли принять бронь. 🗒',
+  `Пожалуйста, укажите номер телефона, в формате:
+🇧🇾 375XXXXXXXXX
+🇷🇺 79XXXXXXXXX
+🇱🇹 370XXXXXXXX
+🇱🇻 371XXXXXXXX
+🇵🇱 48XXXXXXXXX`,
 ];
 
 const incorrectPhoneResponses = [
@@ -112,7 +108,6 @@ const nameRequestMessages = [
   'Как вас зовут? Напишите, пожалуйста, Ваше имя. Оно должно содержать только буквы. 📝',
   'Введите Ваше имя, чтобы мы могли к Вам обращаться. Пожалуйста, без цифр и специальных символов. 😊',
   'Нам нужно Ваше имя для продолжения. Укажите его, пожалуйста, оно должно состоять только из букв. 🙋‍♂️',
-  'Как нам Вас называть? Укажите Ваше имя. Пожалуйста, без цифр и символов. 🖋️',
   'Пожалуйста, укажите Ваше имя для бронирования. Оно должно быть составлено только из букв. 📋',
   'Напишите своё имя, чтобы мы могли продолжить. Не используйте цифры или специальные символы. ✍️',
   'Пожалуйста, укажите Ваше имя для бронирования. Оно должно содержать только буквы  — без цифр и специальных символов. 😇',
@@ -138,7 +133,6 @@ const seatsRequestMessages = [
   'Сколько мест вы хотите забронировать? Введите количество. 🔢',
   'Укажите количество мест, которое вы хотите забронировать. 🪑',
   'Напишите, сколько мест вам нужно. 🤔',
-  'Сколько человек придёт? Введите количество. 👥',
   'Укажите, сколько мест бронировать. Это важно. 💺',
   'Напишите, сколько мест вам необходимо для бронирования. ✍️',
   'Укажите количество мест, пожалуйста. Напишите цифрой. 🔢',
@@ -548,15 +542,9 @@ bot.on('text', async (ctx) => {
       //   ? Array.from(state.optionsForSelect.values())
       //   : await getAllSheets();
 
-      const availableSheets = allSheets.filter(
+      const selectableSheets = allSheets.filter(
         (sheet: any) =>
-          !userBookings.some((b: any) => b.sheetName === sheet.sheetName) &&
-          Number(sheet.available) > 0
-      );
-
-      // проверяем, доступны ли кальяны на всех выбранных листах
-      const allHookahAvailable = availableSheets.every(
-        (sheet: any) => Number(sheet.hookah) > 0
+          !userBookings.some((b: any) => b.sheetName === sheet.sheetName)
       );
 
       // --- Отправляем inline-кнопки отдельно
@@ -569,13 +557,11 @@ bot.on('text', async (ctx) => {
         ctx.session = {};
         return;
       } else {
-        // Доступные для брони
-        const freeSheets = availableSheets.filter((sheet: any) => {
-          const notBooked = !userBookings.some(
+        // Доступные для брони (даже если мест нет)
+        const freeSheets = selectableSheets.filter((sheet: any) => {
+          return !userBookings.some(
             (b: any) => b.sheetName === sheet.sheetName
           );
-          const hasAvailableSeats = Number(sheet.available) > 0;
-          return notBooked && hasAvailableSeats;
         });
 
         if (freeSheets.length === 0) {
@@ -730,7 +716,7 @@ function createInlineKeyboard(
 
   const inlineKeyboard = buttons.map((btn) => [btn]);
   inlineKeyboard.push([
-    { text: 'Завершить выбор ✅', callback_data: 'finish_selection' },
+    { text: '‼️ Завершить выбор ‼️', callback_data: 'finish_selection' },
   ]);
 
   return { reply_markup: { inline_keyboard: inlineKeyboard } };
@@ -1035,6 +1021,25 @@ bot.action('finish_selection', async (ctx) => {
     await ctx.reply(getRandomMessage(seatsRequestMessages));
     await ctx.answerCbQuery();
     return;
+  }
+
+  if (state.action === 'reserve') {
+    const unavailable = state.selectedOptions!.filter((sheetId) => {
+      const option = state.optionsForSelect?.get(sheetId);
+      return !option || Number(option.availableSeats) <= 0;
+    });
+
+    if (unavailable.length > 0) {
+      const titles = unavailable
+        .map((id) => state.optionsForSelect?.get(id)?.title)
+        .filter(Boolean)
+        .join(', ');
+      await ctx.answerCbQuery();
+      await ctx.reply(
+        `К сожалению, на мероприятие(я) ${titles} нет мест для регистрации. Выберите другое событие.`
+      );
+      return;
+    }
   }
 
   state.step = 'input_name';
