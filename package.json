@@ -4,10 +4,10 @@
   "description": "Telegram bot для бронирования с Google Sheets",
   "main": "dist/bot.js",
   "scripts": {
-  "build": "tsc",
-  "start": "node dist/bot.js",
-  "dev": "ts-node-dev src/bot.ts"
-},
+    "build": "tsc",
+    "start": "node dist/bot.js",
+    "dev": "ts-node-dev src/bot.ts"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -16,11 +16,12 @@
     "telegraf": "^4.14.1"
   },
   "devDependencies": {
+    "@types/google-apps-script": "^2.0.8",
     "@types/node": "^20.4.2",
     "@types/node-fetch": "^3.0.3",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.1.6"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": "22.x",

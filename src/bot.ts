@@ -1,4 +1,10 @@
-type GS_ERRORS_TYPES = 'NO_SEATS' | 'NOT_FOUND' | 'NO_PHONE' | 'NO_SHEET_ID'|  'SEATS_CHANGED'| 'INTERNAL_ERROR';
+type GS_ERRORS_TYPES =
+  | 'NO_SEATS'
+  | 'NOT_FOUND'
+  | 'NO_PHONE'
+  | 'NO_SHEET_ID'
+  | 'SEATS_CHANGED'
+  | 'INTERNAL_ERROR';
 
 interface GoogleSheetApiCustomPostError {
   ok: false;
@@ -13,7 +19,9 @@ interface GoogleSheetApiCustomPostSuccess {
   sheetId: number | string;
 }
 
-type GoogleSheetApiPostResponse = GoogleSheetApiCustomPostSuccess | GoogleSheetApiCustomPostError;
+type GoogleSheetApiPostResponse =
+  | GoogleSheetApiCustomPostSuccess
+  | GoogleSheetApiCustomPostError;
 
 type GoogleSheetApiPostResponseArray = GoogleSheetApiPostResponse[];
 
@@ -37,91 +45,106 @@ type GoogleSheetApiGetResponse = GoogleSheetApiSheet[];
 
 const welcomeMessage = `Здравствуйте!
 
-      Здесь Вы можете забронировать места или отменить бронирование на мероприятия в Stand Up Comedy Hall.
+Это чат-бот <b>Stand Up Comedy Hall</b>. Здесь Вы можете <b>забронировать</b> или <b>отменить</b> места на наши мероприятия.
 
-      Для этого ответьте, пожалуйста, на вопросы бота.
+Пожалуйста, отвечайте на вопросы бота чётко и без лишних слов — он автоматический и лучше понимает краткие ответы 😊
 
-      ‼️ Обратите внимание, что бот автоматический, поэтому здороваться с ним не требуется 😁
+🔹 <b>Важная информация о бронировании</b>:
 
-      ВНИМАНИЕ! ВАЖНАЯ ИНФОРМАЦИЯ!
+📍 <b>Размещение гостей</b>
+Вы бронируете места за столиком или у барной стойки. Места выбираются по факту прихода или распределяются администратором в зависимости от количества гостей.
+👉 Для компании от 4 человек мы гарантированно закрепляем отдельный столик.
 
-      ❗️ Обращаем Ваше внимание, что Вы бронируете места за столиком либо за барной стойкой ( места выбираются по факту прихода или распределяются администратором. Для компании от четырех человек закрепляется столик, что гарантирует, что Ваша компания будет сидеть вместе)
-      ❗️ Места за столиком рассчитаны на 4-х человек, поэтому просим Вас дружелюбно отнестись к возможной подсадке и гостям рядом с Вами. Надеемся на Ваше понимание и позитивное настроение.
-      ❗️ Для Вашего комфорта просим приходить МИНИМУМ за 20 минут до начала шоу, это позволит Вам комфортно расположиться, а также сделать заказ и пообщаться с нашими барменами🍸🍹
-      ‼️Оплата брони происходит по факту прихода ( картой, наличными)
+👥 <b>Возможна подсадка</b>
+Столики рассчитаны на 4-х человек. Если Вас меньше, возможно размещение других гостей рядом. Заранее благодарим за понимание и дружелюбие!
 
-      С мероприятиями клуба можно ознакомиться:
-      ✩ Instagram: https://www.instagram.com/standupcomedyhall/
-      ✩ Telegram: https://t.me/standupcomedyhall
+⏰ <b>Время прихода</b>
+Рекомендуем приходить не менее чем за 30 минут до начала (особенно на отчётные концерты). Вы успеете удобно расположиться, сделать заказ и настроиться на юмор!
 
-      Ждем Вас в гости ! 🤗
+💳 <b>Оплата</b>
+Бронь оплачивается на месте — картой или наличными.
 
-      С уважением,
-      Stand Up Comedy Hall ❤️`;
+🍹 <b>Услуги клуба</b>:
+
+• <b>Еда от ресторана Babe</b>
+🛎️ Можно заранее заказать по телефону: +375291063141 или через Direct:
+<a href="https://www.instagram.com/babe_minsk?igsh=OXE2MGY3a3o4Zzdp">Instagram</a>
+• <b>Напитки и кальян</b>
+🚬 Кальян разрешён только в специальных зонах. Бот уточнит при бронировании, нужен ли он Вам.
+⚠️ Курение вейпов, IQOS и др. в клубе запрещено!
+
+📌 <b>С мероприятиями клуба можно ознакомиться</b>:
+✦ <a href="https://www.instagram.com/standupcomedyhall?igsh=a3UxY2thd3FkY3M4&utm_source=qr">Instagram</a>
+✦ <a href="https://t.me/standupcomedyhall">Telegram</a>
+
+Ждём в гости — будет смешно! 🤗
+
+С уважением,
+Stand Up Comedy Hall ❤️`;
 
 const phoneRequestMessages = [
-  "Пожалуйста, введите ваш номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX. 📞",
-  "Нам нужен ваш номер телефона для продолжения. Введите его в формате: 375XXXXXXXXX или 79XXXXXXXXX. 📱",
-  "Укажите номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX, чтобы мы могли продолжить. ☎️",
-  "Введите ваш номер телефона, пожалуйста, в формате: 375XXXXXXXXX или 79XXXXXXXXX. 🔢",
-  "Укажите номер телефона, пожалуйста, в формате: 375XXXXXXXXX или 79XXXXXXXXX. Без него мы не справимся. 🤖",
-  "Нам нужен Ваш номер телефона, чтобы всё получилось. Напишите его в формате: 375XXXXXXXXX или 79XXXXXXXXX! 📲",
-  "Укажите номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX, чтобы мы могли Вам помочь. 👇",
-  "Укажите номер телефона, пожалуйста, в формате: 375XXXXXXXXX или 79XXXXXXXXX. Иначе мы не сможем двигаться дальше! 🚶‍♂️",
-  "Пожалуйста, укажите ваш номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX. 📇",
-  "Введите номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX, чтобы мы могли принять бронь. 🗒",
+  'Пожалуйста, введите ваш номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX. 📞',
+  'Нам нужен ваш номер телефона для продолжения. Введите его в формате: 375XXXXXXXXX или 79XXXXXXXXX. 📱',
+  'Укажите номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX, чтобы мы могли продолжить. ☎️',
+  'Введите ваш номер телефона, пожалуйста, в формате: 375XXXXXXXXX или 79XXXXXXXXX. 🔢',
+  'Укажите номер телефона, пожалуйста, в формате: 375XXXXXXXXX или 79XXXXXXXXX. Без него мы не справимся. 🤖',
+  'Нам нужен Ваш номер телефона, чтобы всё получилось. Напишите его в формате: 375XXXXXXXXX или 79XXXXXXXXX! 📲',
+  'Укажите номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX, чтобы мы могли Вам помочь. 👇',
+  'Укажите номер телефона, пожалуйста, в формате: 375XXXXXXXXX или 79XXXXXXXXX. Иначе мы не сможем двигаться дальше! 🚶‍♂️',
+  'Пожалуйста, укажите ваш номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX. 📇',
+  'Введите номер телефона в формате: 375XXXXXXXXX или 79XXXXXXXXX, чтобы мы могли принять бронь. 🗒',
 ];
 
 const incorrectPhoneResponses = [
-  "Этот номер выглядит странно. Проверьте его, пожалуйста! 🙃",
-  "Упс, кажется, это не телефон. Попробуйте снова! ❌",
-  "Что-то не так с номером. Убедитесь, что формат верный. 🔢",
-  "Номер телефона не распознан. Проверьте и введите его ещё раз. 📵",
-  "Этот номер нам не подходит. Попробуйте другой формат. 🔄",
-  "Похоже, в номере ошибка. Убедитесь, что вы всё ввели правильно. 🛑",
-  "Номер телефона не соответствует формату. Проверьте его, пожалуйста! 🧐",
-  "Что-то не так с этим номером. Попробуйте ещё раз. ☎️",
-  "Номер выглядит подозрительно. Пожалуйста, проверьте его внимательнее. 😬",
-  "Вероятно, это не номер телефона. Проверьте формат и отправьте снова. 🔍",
+  'Этот номер выглядит странно. Проверьте его, пожалуйста! 🙃',
+  'Упс, кажется, это не телефон. Попробуйте снова! ❌',
+  'Что-то не так с номером. Убедитесь, что формат верный. 🔢',
+  'Номер телефона не распознан. Проверьте и введите его ещё раз. 📵',
+  'Этот номер нам не подходит. Попробуйте другой формат. 🔄',
+  'Похоже, в номере ошибка. Убедитесь, что вы всё ввели правильно. 🛑',
+  'Номер телефона не соответствует формату. Проверьте его, пожалуйста! 🧐',
+  'Что-то не так с этим номером. Попробуйте ещё раз. ☎️',
+  'Номер выглядит подозрительно. Пожалуйста, проверьте его внимательнее. 😬',
+  'Вероятно, это не номер телефона. Проверьте формат и отправьте снова. 🔍',
 ];
 
 const nameRequestMessages = [
-  "Как вас зовут? Напишите, пожалуйста, Ваше имя. Оно должно содержать только буквы. 📝",
-  "Введите Ваше имя, чтобы мы могли к Вам обращаться. Пожалуйста, без цифр и специальных символов. 😊",
-  "Нам нужно Ваше имя для продолжения. Укажите его, пожалуйста, оно должно состоять только из букв. 🙋‍♂️",
-  "Как нам Вас называть? Укажите Ваше имя. Пожалуйста, без цифр и символов. 🖋️",
-  "Пожалуйста, укажите Ваше имя для бронирования. Оно должно быть составлено только из букв. 📋",
-  "Напишите своё имя, чтобы мы могли продолжить. Не используйте цифры или специальные символы. ✍️",
-  "Пожалуйста, укажите Ваше имя для бронирования. Оно должно содержать только буквы  — без цифр и специальных символов. 😇",
-  "Для продолжения нам необходимо Ваше имя. Введите его, пожалуйста, имя должно состоять только из букв. 🤗",
-  "Введите своё имя, пожалуйста. Это займёт всего пару секунд! Помните, оно должно быть без цифр и символов. ⏳",
-  "Как Вас зовут? Напишите имя в сообщении ниже. Убедитесь, что оно состоит только из букв. 💬",
+  'Как вас зовут? Напишите, пожалуйста, Ваше имя. Оно должно содержать только буквы. 📝',
+  'Введите Ваше имя, чтобы мы могли к Вам обращаться. Пожалуйста, без цифр и специальных символов. 😊',
+  'Нам нужно Ваше имя для продолжения. Укажите его, пожалуйста, оно должно состоять только из букв. 🙋‍♂️',
+  'Как нам Вас называть? Укажите Ваше имя. Пожалуйста, без цифр и символов. 🖋️',
+  'Пожалуйста, укажите Ваше имя для бронирования. Оно должно быть составлено только из букв. 📋',
+  'Напишите своё имя, чтобы мы могли продолжить. Не используйте цифры или специальные символы. ✍️',
+  'Пожалуйста, укажите Ваше имя для бронирования. Оно должно содержать только буквы  — без цифр и специальных символов. 😇',
+  'Для продолжения нам необходимо Ваше имя. Введите его, пожалуйста, имя должно состоять только из букв. 🤗',
+  'Введите своё имя, пожалуйста. Это займёт всего пару секунд! Помните, оно должно быть без цифр и символов. ⏳',
+  'Как Вас зовут? Напишите имя в сообщении ниже. Убедитесь, что оно состоит только из букв. 💬',
 ];
 
 const incorrectNameResponses = [
-  "Хм, это точно имя? Напишите его ещё раз. 🤔",
-  "Имя выглядит некорректно. Попробуйте ещё раз. ❌",
-  "Похоже, вы допустили ошибку. Проверьте имя и введите его снова. 🧐",
-  "Ваше имя не распознано. Напишите его правильно, пожалуйста. 🤷‍♂️",
-  "Это странное имя. Проверьте, пожалуйста, перед отправкой. 🛑",
-  "Имя выглядит неправильно. Попробуйте другой формат. ✍️",
-  "Упс, кажется, в имени ошибка. Напишите его ещё раз. 😊",
-  "Не могу понять ваше имя. Проверьте, пожалуйста. 🙃",
-  "Что-то не так с вашим именем. Убедитесь, что всё верно. 🤖",
-  "Это точно имя? Напишите его снова, пожалуйста. 🔄",
+  'Хм, это точно имя? Напишите его ещё раз. 🤔',
+  'Имя выглядит некорректно. Попробуйте ещё раз. ❌',
+  'Похоже, вы допустили ошибку. Проверьте имя и введите его снова. 🧐',
+  'Ваше имя не распознано. Напишите его правильно, пожалуйста. 🤷‍♂️',
+  'Это странное имя. Проверьте, пожалуйста, перед отправкой. 🛑',
+  'Имя выглядит неправильно. Попробуйте другой формат. ✍️',
+  'Упс, кажется, в имени ошибка. Напишите его ещё раз. 😊',
+  'Не могу понять ваше имя. Проверьте, пожалуйста. 🙃',
+  'Что-то не так с вашим именем. Убедитесь, что всё верно. 🤖',
+  'Это точно имя? Напишите его снова, пожалуйста. 🔄',
 ];
 
 const seatsRequestMessages = [
-  "Сколько мест вы хотите забронировать? Введите количество. 🔢",
-  "Укажите количество мест, которое вы хотите забронировать. 🪑",
-  "Напишите, сколько мест вам нужно. 🤔",
-  "Сколько человек придёт? Введите количество. 👥",
-  "Укажите, сколько мест бронировать. Это важно. 💺",
-  "Напишите, сколько мест вам необходимо для бронирования. ✍️",
-  "Укажите количество мест, пожалуйста. Напишите цифрой. 🔢",
-  "Сколько мест бронируем? Напишите ответ ниже. 👇",
-  "Укажите точное количество мест для брони. ✅",
-  "Введите количество мест. Мы всё зафиксируем! 📋",
+  'Сколько мест вы хотите забронировать? Введите количество. 🔢',
+  'Укажите количество мест, которое вы хотите забронировать. 🪑',
+  'Напишите, сколько мест вам нужно. 🤔',
+  'Сколько человек придёт? Введите количество. 👥',
+  'Укажите, сколько мест бронировать. Это важно. 💺',
+  'Напишите, сколько мест вам необходимо для бронирования. ✍️',
+  'Укажите количество мест, пожалуйста. Напишите цифрой. 🔢',
+  'Сколько мест бронируем? Напишите ответ ниже. 👇',
+  'Укажите точное количество мест для брони. ✅',
+  'Введите количество мест. Мы всё зафиксируем! 📋',
 ];
 
 const incorrectSeatsResponses = [
@@ -138,55 +161,55 @@ const incorrectSeatsResponses = [
 ];
 
 const bookingsFoundResponses = [
-  "Найдены следующие бронирования: 📋",
-  "Ваши актуальные бронирования: ✅",
-  "Вот список ваших бронирований: 👇",
-  "Мы нашли следующие записи: 🗂️",
-  "Актуальные бронирования: 🔍",
-  "Список активных бронирований: 📜",
-  "Ваши бронирования найдены: 🎉",
-  "Вот, что нам удалось найти: 🧐",
-  "Найдено! Ваши бронирования: 📇",
-  "Мы нашли записи, связанные с вами: ✨",
+  'Найдены следующие бронирования: 📋',
+  'Ваши актуальные бронирования: ✅',
+  'Вот список ваших бронирований: 👇',
+  'Мы нашли следующие записи: 🗂️',
+  'Актуальные бронирования: 🔍',
+  'Список активных бронирований: 📜',
+  'Ваши бронирования найдены: 🎉',
+  'Вот, что нам удалось найти: 🧐',
+  'Найдено! Ваши бронирования: 📇',
+  'Мы нашли записи, связанные с вами: ✨',
 ];
 
 const noBookingsResponses = [
-  "К сожалению, мы ничего не нашли. 🙁",
-  "Записи не найдены. Попробуйте ещё раз позже. ❌",
-  "Бронирования отсутствуют. Начните сначала. 🤷‍♂️",
-  "Никаких бронирований не обнаружено. 🧐",
-  "Мы не нашли записи с этим номером. 😓",
-  "Бронирований пока нет. Попробуйте позже. ⏳",
-  "Записей о бронированиях не найдено. 🔄",
-  "Похоже, вы ничего не бронировали. 🙃",
-  "К сожалению, бронирований пока нет. 🤔",
-  "Мы ничего не нашли. Попробуйте сделать новое бронирование. 📝",
+  'К сожалению, мы ничего не нашли. 🙁',
+  'Записи не найдены. Попробуйте ещё раз позже. ❌',
+  'Бронирования отсутствуют. Начните сначала. 🤷‍♂️',
+  'Никаких бронирований не обнаружено. 🧐',
+  'Мы не нашли записи с этим номером. 😓',
+  'Бронирований пока нет. Попробуйте позже. ⏳',
+  'Записей о бронированиях не найдено. 🔄',
+  'Похоже, вы ничего не бронировали. 🙃',
+  'К сожалению, бронирований пока нет. 🤔',
+  'Мы ничего не нашли. Попробуйте сделать новое бронирование. 📝',
 ];
 
 const bookingUpdatedResponses = [
-  "Изменения успешно внесены. ✅",
-  "Ваше бронирование обновлено! 🎉",
-  "Мы внесли изменения в ваше бронирование. ✍️",
-  "Обновление прошло успешно! 🛠️",
-  "Ваши данные обновлены. Спасибо! 💾",
-  "Все изменения сохранены. 📋",
-  "Ваше бронирование теперь обновлено! 🔄",
-  "Успех! Изменения зафиксированы. ✅",
-  "Обновлено! Всё в порядке. 👍",
-  "Мы обновили ваше бронирование. Наслаждайтесь! 🎊",
+  'Изменения успешно внесены. ✅',
+  'Ваше бронирование обновлено! 🎉',
+  'Мы внесли изменения в ваше бронирование. ✍️',
+  'Обновление прошло успешно! 🛠️',
+  'Ваши данные обновлены. Спасибо! 💾',
+  'Все изменения сохранены. 📋',
+  'Ваше бронирование теперь обновлено! 🔄',
+  'Успех! Изменения зафиксированы. ✅',
+  'Обновлено! Всё в порядке. 👍',
+  'Мы обновили ваше бронирование. Наслаждайтесь! 🎊',
 ];
 
 const bookingDeletedResponses = [
-  "Бронирование успешно удалено. ❌",
-  "Ваше бронирование удалено. Надеемся увидеть вас снова! 🙌",
-  "Запись удалена. Всё чисто. 🧹",
-  "Удаление прошло успешно! 👍",
-  "Ваше бронирование больше не активно. ❌",
-  "Мы удалили запись. Всё готово! 🗑️",
-  "Удалено. Если передумаете, приходите снова. 🎉",
-  "Ваше бронирование удалено. Спасибо, что сообщили! 🙏",
-  "Успех! Запись удалена. 🔄",
-  "Бронирование удалено. До новых встреч! 👋",
+  'Бронирование успешно удалено. ❌',
+  'Ваше бронирование удалено. Надеемся увидеть вас снова! 🙌',
+  'Запись удалена. Всё чисто. 🧹',
+  'Удаление прошло успешно! 👍',
+  'Ваше бронирование больше не активно. ❌',
+  'Мы удалили запись. Всё готово! 🗑️',
+  'Удалено. Если передумаете, приходите снова. 🎉',
+  'Ваше бронирование удалено. Спасибо, что сообщили! 🙏',
+  'Успех! Запись удалена. 🔄',
+  'Бронирование удалено. До новых встреч! 👋',
 ];
 
 const selectEventMessages = [
@@ -194,7 +217,7 @@ const selectEventMessages = [
   "Вы можете выбрать одно или несколько мероприятий. После этого нажмите 'Завершить выбор'. 👍",
   "Пожалуйста, выберите одно или несколько мероприятий, а затем нажмите 'Завершить выбор'. 😌",
   "Вы можете выбрать несколько мероприятий. Не забудьте нажать 'Завершить выбор', когда будете готовы! 🧐",
-  "Выберите одно или несколько мероприятий, а затем подтвердите свой выбор. 👌",
+  'Выберите одно или несколько мероприятий, а затем подтвердите свой выбор. 👌',
   "Нужно выбрать одно или несколько мероприятий, а потом нажать 'Завершить выбор'. 🎯",
   "Выберите несколько мероприятий, если нужно, и завершите выбор нажатием кнопки 'Завершить выбор'. ✅",
   "Пожалуйста, выберите одно или несколько мероприятий, а затем нажмите 'Завершить выбор', чтобы продолжить. 💡",
@@ -203,55 +226,55 @@ const selectEventMessages = [
 ];
 
 const noAvailableSeatsMessages = [
-  "К сожалению, на ближайшие мероприятия нет свободных мест. Возможно, они появятся позже! 😔",
-  "Ой, похоже, на ближайшие мероприятия уже все забронировано. Возможно, места появятся позже! 😓",
-  "Увы, все места на ближайшие мероприятия заняты. Может, появятся позже! 😉",
-  "К сожалению, на ближайшие мероприятия нет мест. Возможно, что-то освободится позже! 😞",
-  "Все места на ближайшие мероприятия уже заняты. Может, позже появятся свободные места! 🙁",
-  "Похоже, на ближайшие мероприятия нет свободных мест. Но, возможно, они появятся позже! 😕",
-  "Извините, на ближайшие мероприятия все места заняты. Возможно, позже что-то освободится! 😔",
-  "На ближайшие мероприятия, к сожалению, нет мест. Возможно, позже что-то станет доступно! 😌",
-  "Все места на ближайшие мероприятия уже забронированы. Но не переживайте, возможно, позже появятся места! 🤷‍♂️",
-  "Увы, на ближайшие мероприятия мест больше нет. Возможно, позже что-то освободится. 😟",
+  'К сожалению, на ближайшие мероприятия нет свободных мест. Возможно, они появятся позже! 😔',
+  'Ой, похоже, на ближайшие мероприятия уже все забронировано. Возможно, места появятся позже! 😓',
+  'Увы, все места на ближайшие мероприятия заняты. Может, появятся позже! 😉',
+  'К сожалению, на ближайшие мероприятия нет мест. Возможно, что-то освободится позже! 😞',
+  'Все места на ближайшие мероприятия уже заняты. Может, позже появятся свободные места! 🙁',
+  'Похоже, на ближайшие мероприятия нет свободных мест. Но, возможно, они появятся позже! 😕',
+  'Извините, на ближайшие мероприятия все места заняты. Возможно, позже что-то освободится! 😔',
+  'На ближайшие мероприятия, к сожалению, нет мест. Возможно, позже что-то станет доступно! 😌',
+  'Все места на ближайшие мероприятия уже забронированы. Но не переживайте, возможно, позже появятся места! 🤷‍♂️',
+  'Увы, на ближайшие мероприятия мест больше нет. Возможно, позже что-то освободится. 😟',
 ];
 
 const noEventSelectedMessages = [
-  "Вы не выбрали ни одного мероприятия. Попробуйте снова! ❌",
-  "Ой, кажется, вы забыли выбрать мероприятие. Пожалуйста, выберите хотя бы одно. 🤔",
-  "Ни одного мероприятия не выбрано. Попробуйте выбрать что-то! 🧐",
-  "Похоже, вы не выбрали мероприятие. Пожалуйста, выберите одно или несколько. 🙃",
-  "Вы не выбрали ни одного мероприятия. Не забудьте выбрать хотя бы одно! 👀",
-  "Упс, ничего не выбрано. Попробуйте выбрать мероприятия ниже. 👇",
-  "Кажется, вы пропустили выбор. Выберите хотя бы одно мероприятие для продолжения. ✅",
-  "Не выбрано ни одного мероприятия. Выберите, чтобы продолжить. 🧐",
-  "Вы не выбрали никаких мероприятий. Пожалуйста, выберите что-то. 👈",
-  "Ничего не выбрано. Пожалуйста, выберите хотя бы одно мероприятие. 🙄",
+  'Вы не выбрали ни одного мероприятия. Попробуйте снова! ❌',
+  'Ой, кажется, вы забыли выбрать мероприятие. Пожалуйста, выберите хотя бы одно. 🤔',
+  'Ни одного мероприятия не выбрано. Попробуйте выбрать что-то! 🧐',
+  'Похоже, вы не выбрали мероприятие. Пожалуйста, выберите одно или несколько. 🙃',
+  'Вы не выбрали ни одного мероприятия. Не забудьте выбрать хотя бы одно! 👀',
+  'Упс, ничего не выбрано. Попробуйте выбрать мероприятия ниже. 👇',
+  'Кажется, вы пропустили выбор. Выберите хотя бы одно мероприятие для продолжения. ✅',
+  'Не выбрано ни одного мероприятия. Выберите, чтобы продолжить. 🧐',
+  'Вы не выбрали никаких мероприятий. Пожалуйста, выберите что-то. 👈',
+  'Ничего не выбрано. Пожалуйста, выберите хотя бы одно мероприятие. 🙄',
 ];
 
 const bookingSuccessMessages = [
-  "Всё прошло успешно! Ваше бронирование подтверждено. 🏆",
-  "Ваше бронирование подтверждено! Всё прошло успешно. 🎉",
-  "Поздравляем! Всё прошло успешно, Ваше бронирование подтверждено. ✅",
-  "Ваше бронирование успешно подтверждено. Всё прошло отлично! 🏅",
-  "Всё получилось! Ваше бронирование подтверждено. 📅",
-  "Ваше бронирование успешно подтверждено. Всё прошло как по маслу! ✨",
-  "Отлично! Всё прошло успешно, и ваше бронирование подтверждено. 🎟️",
-  "Ваше бронирование успешно подтверждено. Всё прошло замечательно. 🔑",
-  "Готово! Всё прошло успешно, Ваше бронирование подтверждено. 🎊",
-  "Ваше бронирование подтверждено, всё прошло успешно. Поздравляем! 🥳",
+  'Всё прошло успешно! Ваше бронирование подтверждено. 🏆',
+  'Ваше бронирование подтверждено! Всё прошло успешно. 🎉',
+  'Поздравляем! Всё прошло успешно, Ваше бронирование подтверждено. ✅',
+  'Ваше бронирование успешно подтверждено. Всё прошло отлично! 🏅',
+  'Всё получилось! Ваше бронирование подтверждено. 📅',
+  'Ваше бронирование успешно подтверждено. Всё прошло как по маслу! ✨',
+  'Отлично! Всё прошло успешно, и ваше бронирование подтверждено. 🎟️',
+  'Ваше бронирование успешно подтверждено. Всё прошло замечательно. 🔑',
+  'Готово! Всё прошло успешно, Ваше бронирование подтверждено. 🎊',
+  'Ваше бронирование подтверждено, всё прошло успешно. Поздравляем! 🥳',
 ];
 
 const noSpamResponse = [
-  "Пожалуйста, подождите немного. Идёт обработка предыдущей команды. ⏳",
-  "Мы уже работаем над вашим запросом. Пожалуйста, не отправляйте команды слишком быстро. 🔄",
-  "Идёт обработка, подождите немного. Мы скоро вернемся к вашему запросу! ⏳",
-  "Не спамьте, пожалуйста! Мы уже работаем над вашим запросом. Пожалуйста, подождите. 🔄",
-  "Ваш запрос в процессе! Подождите немного, прежде чем отправлять следующую команду. ⏳",
-  "Пожалуйста, подождите, пока мы завершим текущую задачу. Не спамьте команды! 🕒",
-  "Мы обрабатываем ваш запрос. Пожалуйста, подождите немного и не отправляйте команды подряд. 🔄",
-  "Запрос в процессе! Пожалуйста, подождите, пока мы не закончим с предыдущей командой. ⏳",
-  "Не переживайте, ваш запрос уже в работе! Пожалуйста, подождите немного. 🛠️",
-  "Подождите, пожалуйста! Идет обработка предыдущей команды, не отправляйте команды слишком быстро. 🔄",
+  'Пожалуйста, подождите немного. Идёт обработка предыдущей команды. ⏳',
+  'Мы уже работаем над вашим запросом. Пожалуйста, не отправляйте команды слишком быстро. 🔄',
+  'Идёт обработка, подождите немного. Мы скоро вернемся к вашему запросу! ⏳',
+  'Не спамьте, пожалуйста! Мы уже работаем над вашим запросом. Пожалуйста, подождите. 🔄',
+  'Ваш запрос в процессе! Подождите немного, прежде чем отправлять следующую команду. ⏳',
+  'Пожалуйста, подождите, пока мы завершим текущую задачу. Не спамьте команды! 🕒',
+  'Мы обрабатываем ваш запрос. Пожалуйста, подождите немного и не отправляйте команды подряд. 🔄',
+  'Запрос в процессе! Пожалуйста, подождите, пока мы не закончим с предыдущей командой. ⏳',
+  'Не переживайте, ваш запрос уже в работе! Пожалуйста, подождите немного. 🛠️',
+  'Подождите, пожалуйста! Идет обработка предыдущей команды, не отправляйте команды слишком быстро. 🔄',
 ];
 
 function getRandomMessage(messageAray: string[]) {
@@ -283,12 +306,12 @@ async function fetchWithTimeout(
     return response;
   } catch (err) {
     clearTimeout(id);
-    throw new Error("⏱️ Сервер не ответил вовремя или произошла ошибка сети");
+    throw new Error('⏱️ Сервер не ответил вовремя или произошла ошибка сети');
   }
 }
 
-import "dotenv/config";
-import { Telegraf, Context, Markup, session } from "telegraf";
+import 'dotenv/config';
+import { Telegraf, Context, Markup, session } from 'telegraf';
 
 // --- Типизация
 interface SheetOption {
@@ -296,23 +319,30 @@ interface SheetOption {
   title: string;
   availableSeats: number;
   currentSeats: number;
+  hookah: number;
 }
 
 interface UserSession {
-  step?: "input_phone" | "select_party" | "input_name" | "input_places";
+  step?:
+    | 'input_phone'
+    | 'select_party'
+    | 'input_name'
+    | 'input_places'
+    | 'input_hookah';
   phone?: string;
   selectedOptions?: number[];
-  action?: "reserve" | "edit" | "delete" | "check";
+  action?: 'reserve' | 'edit' | 'delete' | 'check';
   optionsForSelect?: Map<number, SheetOption>;
   name?: string;
   places?: number;
-  postRequestsErrors?: Array<String>; 
+  postRequestsErrors?: Array<String>;
+  hookah?: boolean;
 }
 
 const sheetsCache = {
   data: null as any,
   timestamp: 0,
-  ttl: 30000 // 15 секунд
+  ttl: 30000, // 15 секунд
 };
 
 async function getAllSheets() {
@@ -334,8 +364,6 @@ async function getAllSheets() {
   return json;
 }
 
-
-
 // Расширяем Context
 type MyContext = Context & { session: UserSession };
 
@@ -348,50 +376,50 @@ bot.use(session());
 
 // --- Главное меню
 const mainMenu = Markup.keyboard([
-  ["Забронировать"],
-  ["Проверить бронь", "Изменить бронь"],
-  ["Отменить бронь", "Начать заново"],
+  ['Забронировать'],
+  ['Проверить бронь', 'Изменить бронь'],
+  ['Отменить бронь', 'Начать заново'],
 ]).resize();
 
 // --- Старт
 bot.start((ctx) => {
   ctx.session = {};
-  ctx.reply(welcomeMessage, mainMenu);
+  ctx.replyWithHTML(welcomeMessage, mainMenu);
 });
 
-bot.hears("Начать заново", (ctx) => {
+bot.hears('Начать заново', (ctx) => {
   ctx.session = {};
-  ctx.reply(welcomeMessage, mainMenu);
+  ctx.replyWithHTML(welcomeMessage, mainMenu);
 });
 
 // --- Забронировать
-bot.hears("Забронировать", (ctx) => {
-  ctx.session = { step: "input_phone", action: "reserve", selectedOptions: [] };
+bot.hears('Забронировать', (ctx) => {
+  ctx.session = { step: 'input_phone', action: 'reserve', selectedOptions: [] };
   ctx.reply(getRandomMessage(phoneRequestMessages));
 });
 
 // --- Проверка брони
-bot.hears("Проверить бронь", async (ctx) => {
-  ctx.session = { step: "input_phone", action: "check" }; // используем action "check"
+bot.hears('Проверить бронь', async (ctx) => {
+  ctx.session = { step: 'input_phone', action: 'check' }; // используем action "check"
   ctx.reply(getRandomMessage(phoneRequestMessages));
 });
 
 // --- Отмена бронирования
-bot.hears("Отменить бронь", async (ctx) => {
-  ctx.session = { step: "input_phone", action: "delete", selectedOptions: [] };
+bot.hears('Отменить бронь', async (ctx) => {
+  ctx.session = { step: 'input_phone', action: 'delete', selectedOptions: [] };
   await ctx.reply(getRandomMessage(phoneRequestMessages));
 });
 
 // --- Изменение бронирования
-bot.hears("Изменить бронь", async (ctx) => {
-  ctx.session = { step: "input_phone", action: "edit", selectedOptions: [] };
+bot.hears('Изменить бронь', async (ctx) => {
+  ctx.session = { step: 'input_phone', action: 'edit', selectedOptions: [] };
   await ctx.reply(getRandomMessage(phoneRequestMessages));
 });
 
 // --- Обработка текста
-bot.on("text", async (ctx) => {
+bot.on('text', async (ctx) => {
   if (!ctx.session) {
-    await ctx.reply("⚠️ Сессия сброшена. Начнем заново.", mainMenu);
+    await ctx.reply('⚠️ Сессия сброшена. Начнем заново.', mainMenu);
     return;
   }
   const state = ctx.session;
@@ -400,7 +428,7 @@ bot.on("text", async (ctx) => {
 
   switch (state.step) {
     // === 1. Ввод телефона ===
-    case "input_phone":
+    case 'input_phone':
       if (!/^(\+?375\d{9}|\+?79\d{9})$/.test(text)) {
         return ctx.reply(getRandomMessage(incorrectPhoneResponses));
       }
@@ -409,11 +437,11 @@ bot.on("text", async (ctx) => {
 
       // --- Отправка стикера
       await ctx.replyWithSticker(
-        "CAACAgIAAxkBAAIJHWdEIT91AAHXkLWFFzYJaX9QKTIoWwAC6V0AAunBIEqsMOs8iagxVTYE"
+        'CAACAgIAAxkBAAIJHWdEIT91AAHXkLWFFzYJaX9QKTIoWwAC6V0AAunBIEqsMOs8iagxVTYE'
       );
 
       // --- Прогресс-бар загрузки
-      const loadMsg = await ctx.reply("⏳ Загружаем данные...");
+      const loadMsg = await ctx.reply('⏳ Загружаем данные...');
       const msgId = loadMsg.message_id;
       let progress = 0;
       const barLen = 6;
@@ -422,7 +450,7 @@ bot.on("text", async (ctx) => {
         progress += Math.floor(Math.random() * 10);
         if (progress > 100) progress = 100;
         const filled = Math.floor((progress / 100) * barLen);
-        const bar = "🟩".repeat(filled) + "⬛".repeat(barLen - filled);
+        const bar = '🟩'.repeat(filled) + '⬛'.repeat(barLen - filled);
         try {
           await ctx.telegram.editMessageText(
             ctx.chat!.id,
@@ -455,12 +483,12 @@ bot.on("text", async (ctx) => {
         try {
           await ctx.telegram.deleteMessage(ctx.chat!.id, msgId);
         } catch (e) {
-          console.warn("⚠️ Не удалось удалить сообщение:", e);
+          console.warn('⚠️ Не удалось удалить сообщение:', e);
         }
         if (
-          state.action === "delete" ||
-          state.action === "check" ||
-          state.action === "edit"
+          state.action === 'delete' ||
+          state.action === 'check' ||
+          state.action === 'edit'
         ) {
           await ctx.reply(getRandomMessage(noBookingsResponses), mainMenu);
           ctx.session = {};
@@ -471,27 +499,37 @@ bot.on("text", async (ctx) => {
       // --- Создаём карту для inline-кнопок
       state.optionsForSelect = new Map();
       userBookings.forEach((b: any) => {
-        const totalSeats = b.data.reduce((sum:any, row:any) => 
-        row.phone === state.phone ? sum + Number(row.seats) : sum, 0);
+        const totalSeats = b.data.reduce(
+          (sum: any, row: any) =>
+            row.phone === state.phone ? sum + Number(row.seats) : sum,
+          0
+        );
         state.optionsForSelect!.set(b.sheetId, {
           index: b.sheetId,
           title:
-            state.action === "edit"
+            state.action === 'edit'
               ? `${b.party} — ${totalSeats} мест`
               : b.party,
           availableSeats: b.available,
           currentSeats: totalSeats || 0,
+          hookah: b.hookah || 0,
         });
       });
 
-      state.step = "select_party";
+      state.step = 'select_party';
 
       // --- Показываем текущие бронирования (только если есть)
-      if (userBookings.length > 0 && (state.action === 'reserve' || state.action === 'check')) {
+      if (
+        userBookings.length > 0 &&
+        (state.action === 'reserve' || state.action === 'check')
+      ) {
         let msg = `${getRandomMessage(bookingsFoundResponses)}\n`;
         for (const b of userBookings) {
-        const totalSeats = b.data.reduce((sum:any, row:any) => 
-        row.phone === state.phone ? sum + Number(row.seats) : sum, 0);
+          const totalSeats = b.data.reduce(
+            (sum: any, row: any) =>
+              row.phone === state.phone ? sum + Number(row.seats) : sum,
+            0
+          );
           msg += `• ${b.party} — ${totalSeats} мест\n`;
         }
         await ctx.reply(msg);
@@ -501,7 +539,7 @@ bot.on("text", async (ctx) => {
       try {
         await ctx.telegram.deleteMessage(ctx.chat!.id, msgId);
       } catch (e) {
-        console.warn("⚠️ Не удалось удалить сообщение:", e);
+        console.warn('⚠️ Не удалось удалить сообщение:', e);
       }
 
       // // --- Доступные для выбора события
@@ -510,25 +548,31 @@ bot.on("text", async (ctx) => {
       //   ? Array.from(state.optionsForSelect.values())
       //   : await getAllSheets();
 
-      const availableSheets = allSheets.filter((sheet: any) =>
-      !userBookings.some((b:any) => b.sheetName === sheet.sheetName) && Number(sheet.available) > 0
-);
+      const availableSheets = allSheets.filter(
+        (sheet: any) =>
+          !userBookings.some((b: any) => b.sheetName === sheet.sheetName) &&
+          Number(sheet.available) > 0
+      );
 
+      // проверяем, доступны ли кальяны на всех выбранных листах
+      const allHookahAvailable = availableSheets.every(
+        (sheet: any) => Number(sheet.hookah) > 0
+      );
 
       // --- Отправляем inline-кнопки отдельно
-      if (state.action === "delete" || state.action === "edit") {
+      if (state.action === 'delete' || state.action === 'edit') {
         await ctx.reply(
           getRandomMessage(bookingsFoundResponses),
           createInlineKeyboard(state.optionsForSelect!, state.selectedOptions!)
         );
-      } else if (state.action === "check") {
+      } else if (state.action === 'check') {
         ctx.session = {};
         return;
       } else {
-        // Доступные для брони 
+        // Доступные для брони
         const freeSheets = availableSheets.filter((sheet: any) => {
           const notBooked = !userBookings.some(
-            (b: any) => b.sheetName === sheet.sheetName 
+            (b: any) => b.sheetName === sheet.sheetName
           );
           const hasAvailableSeats = Number(sheet.available) > 0;
           return notBooked && hasAvailableSeats;
@@ -546,7 +590,8 @@ bot.on("text", async (ctx) => {
             index: s.sheetId,
             title: s.party,
             availableSeats: s.available,
-            currentSeats: 0
+            currentSeats: 0,
+            hookah: s.hookah,
           });
         });
 
@@ -558,139 +603,89 @@ bot.on("text", async (ctx) => {
       break;
 
     // === 2. Ввод имени ===
-    case "input_name":
+    case 'input_name':
       if (!/^[A-Za-zА-Яа-яЁё\s'-]+$/.test(text)) {
         return ctx.reply(getRandomMessage(incorrectNameResponses));
       }
       state.name = text;
-      state.step = "input_places";
+      state.step = 'input_places';
       ctx.reply(getRandomMessage(seatsRequestMessages));
       break;
 
     // === 3. Ввод количества мест и добавление в таблицу ===
-    case "input_places":
-      if (state.action === "edit") {
+    case 'input_places':
+      if (state.action === 'edit') {
         const placesNum = parseInt(text);
         if (isNaN(placesNum) || placesNum <= 0)
-          return ctx.reply(getRandomMessage(incorrectSeatsResponses).replace(
-              "MAXSEATS",
-              ''
-            ));
+          return ctx.reply(
+            getRandomMessage(incorrectSeatsResponses).replace('MAXSEATS', '')
+          );
         let maxAvailable = 155;
         for (const sheetId of state.selectedOptions!) {
           const option = state.optionsForSelect!.get(sheetId);
           console.log(option);
           if (option) {
-            maxAvailable = Math.min(maxAvailable, Number(option.availableSeats) + option.currentSeats);
+            maxAvailable = Math.min(
+              maxAvailable,
+              Number(option.availableSeats) + option.currentSeats
+            );
           }
         }
 
-        if (placesNum > maxAvailable ) {
+        if (placesNum > maxAvailable) {
           return ctx.reply(
             getRandomMessage(incorrectSeatsResponses).replace(
-              "MAXSEATS",
+              'MAXSEATS',
               maxAvailable.toString()
             )
           );
         }
 
-        // --- Анимация отправки изменений
-        const sendMsg = await ctx.reply("📤 Отправляем изменения...");
-        const sendId = sendMsg.message_id;
-        let sendProgress = 0;
-        const sendBarLen = 6;
+        state.places = placesNum;
 
-        const sendTimer = setInterval(async () => {
-          sendProgress += Math.floor(Math.random() * 15);
-          if (sendProgress > 100) sendProgress = 100;
-          const filled = Math.floor((sendProgress / 100) * sendBarLen);
-          const bar = "🟩".repeat(filled) + "⬛".repeat(sendBarLen - filled);
-          try {
-            await ctx.telegram.editMessageText(
-              ctx.chat!.id,
-              sendId,
-              undefined,
-              `📤 Отправка изменений: ${bar} ${sendProgress}%`
-            );
-          } catch {}
-          if (sendProgress >= 100) clearInterval(sendTimer);
-        }, 500);
-
-        // --- POST-запрос на обновление
-        state.postRequestsErrors = [];
-
-        const bookingsArray = state.selectedOptions!.map(sheetId => ({
-          action: "update",
-          sheetId,
-          phone: state.phone,
-          seats: placesNum,
-        }));
-        const body = {bookings: bookingsArray}
-        const resp = await fetchWithTimeout(
-          GS_URL,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-            redirect: "follow"
-          },
-          20000
-        );
-
-        const json:GoogleSheetApiPostResponseArray = await resp.json(); // массив результатов
-        console.log(body, json);
-
-        sheetsCache.data = null;
-        sheetsCache.timestamp = 0;
-
-        // собираем ошибки по листам
-        json.forEach((res: any) => {
-          if (!res.ok && res.type === 'SEATS_CHANGED') {
-            const title = state.optionsForSelect?.get(res.sheetId)?.title;
-            if (state.postRequestsErrors) state.postRequestsErrors.push(`${title} - осталось ${res.available}`);
-          }
+        // Проверяем доступность кальяна
+        const hookahAvailable = state.selectedOptions!.every((sheetId) => {
+          const option = state.optionsForSelect!.get(sheetId);
+          return option && Number(option.hookah) > 0;
         });
 
+        if (hookahAvailable) {
+          // Предлагаем выбрать кальян
+          state.step = 'input_hookah';
+          return ctx.reply('Хотите заказать кальян?', {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: 'Да', callback_data: 'hookah_yes' }],
+                [{ text: 'Нет', callback_data: 'hookah_no' }],
+              ],
+            },
+          });
+        }
 
-        clearInterval(sendTimer);
-
-        if (state.postRequestsErrors.length !== 0) {
-        const msg = `В момент бронирования на следующее мероприятие(я) количество доступных мест изменилось:\n${state.postRequestsErrors.join(',')}.\n Введите количество мест еще раз, пожалуйста.`;
-        await ctx.telegram.editMessageText(
-          ctx.chat!.id,
-          sendId,
-          undefined,
-          msg
-        );
-        ctx.session = {};
-        return;
-      }
-
-        await ctx.telegram.editMessageText(
-          ctx.chat!.id,
-          sendId,
-          undefined,
-          getRandomMessage(bookingUpdatedResponses)
-        );
-        ctx.session = {};
+        // Если кальян недоступен, устанавливаем hookah = false и отправляем обновление
+        state.hookah = false;
+        await updateBooking(ctx);
         return;
       }
 
       const placesNum = parseInt(text);
       if (isNaN(placesNum) || placesNum <= 0)
-        return ctx.reply("Введите корректное число мест.");
+        return ctx.reply('Введите корректное число мест.');
       let maxAvailable = 155;
       for (const sheetId of state.selectedOptions!) {
         const option = state.optionsForSelect!.get(sheetId);
         if (option) {
-            maxAvailable = Math.min(maxAvailable, Number(option.availableSeats) + option.currentSeats);
-          }
+          maxAvailable = Math.min(
+            maxAvailable,
+            Number(option.availableSeats) + option.currentSeats
+          );
+        }
       }
 
       if (placesNum > maxAvailable) {
         return ctx.reply(
           getRandomMessage(incorrectSeatsResponses).replace(
-            "MAXSEATS",
+            'MAXSEATS',
             maxAvailable.toString()
           )
         );
@@ -698,96 +693,27 @@ bot.on("text", async (ctx) => {
 
       state.places = placesNum;
 
-      // --- Анимация отправки брони
-      const sendMsg = await ctx.reply("📤 Отправляем бронь...");
-      const sendId = sendMsg.message_id;
-      let sendProgress = 0;
-      const sendBarLen = 6; // ✅ фиксируем длину прогресс-бара
-
-      const sendTimer = setInterval(async () => {
-        sendProgress += Math.floor(Math.random() * 15);
-        if (sendProgress > 100) sendProgress = 100;
-        const filled = Math.floor((sendProgress / 100) * sendBarLen);
-        const bar = "🟩".repeat(filled) + "⬛".repeat(sendBarLen - filled);
-        try {
-          await ctx.telegram.editMessageText(
-            ctx.chat!.id,
-            sendId,
-            undefined,
-            `📤 Отправка данных: ${bar} ${sendProgress}%`
-          );
-        } catch {}
-        if (sendProgress >= 100) clearInterval(sendTimer);
-      }, 500);
-
-      // --- POST запросы
-      state.postRequestsErrors = [];
-
-      const bookingsArray = state.selectedOptions!.map(sheetId => ({
-        sheetId,
-        date: new Date().toLocaleString(),
-        name: state.name,
-        phone: state.phone,
-        seats: state.places,
-        nickname: ctx.from?.username || "",
-      }));
-
-      const body = {bookings: bookingsArray}
-      const resp = await fetchWithTimeout(
-        GS_URL,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-          redirect: "follow"
-        },
-        20000
-      );
-
-      const json: GoogleSheetApiPostResponseArray = await resp.json(); // массив результатов
-      console.log(body, json);
-
-      sheetsCache.data = null;
-
-      // собираем ошибки по листам
-      json.forEach((res: any) => {
-        if (!res.ok && res.type === 'SEATS_CHANGED') {
-          const title = state.optionsForSelect?.get(res.sheetId)?.title;
-          if (state.postRequestsErrors) state.postRequestsErrors.push(`${title} - осталось ${res.available}`);
-        }
+      const hookahAvailable = state.selectedOptions!.every((sheetId) => {
+        const option = state.optionsForSelect!.get(sheetId);
+        return option && Number(option.hookah) > 0;
       });
 
-      clearInterval(sendTimer);
-      
-      if (state.postRequestsErrors.length !== 0) {
-        const msg = `В момент бронирования на следующее мероприятие(я) количество доступных мест изменилось:\n${state.postRequestsErrors.join(',')}.\n Введите количество мест еще раз, пожалуйста.`;
-        return ctx.reply(msg);
+      if (hookahAvailable) {
+        // Предлагаем выбрать кальян
+        state.step = 'input_hookah';
+        return ctx.reply('Хотите заказать кальян?', {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: 'Да', callback_data: 'hookah_yes' }],
+              [{ text: 'Нет', callback_data: 'hookah_no' }],
+            ],
+          },
+        });
       }
 
-      try {
-        await ctx.telegram.deleteMessage(ctx.chat!.id, sendId);
-      } catch (e) {
-        console.warn("⚠️ Не удалось удалить сообщение:", e);
-      }
-      ctx.replyWithSticker(
-        "CAACAgIAAxkBAAIJ_mdEY7JQtx_hqkGl5023DkZ9pWdYAAIMYgACuyMYShJp1N-PPHrRNgQ"
-      );
-      ctx.reply(
-        `${getRandomMessage(
-          bookingSuccessMessages
-        )}\n\nЕсли Ваши планы изменились, дайте нам знать любым удобным способом (мессенджеры, директ). Также Вы можете отменить бронь самостоятельно с помощью бота.
-
-‼️ Важно: все брони снимаются за 10 минут до начала мероприятия, пожалуйста, не опаздывайте ☺️
-
-Ждем Вас по адресу ул. Кальварийская, 21.
-⏰ Встреча гостей начинается в 19:00. Для вашего удобства, пожалуйста, приходите заранее.`,
-        mainMenu
-      );
-      ctx.replyWithDocument({
-        source: "assets/rules.pdf",
-        filename: "Правила посещения клуба.pdf",
-      });
-      ctx.session = {};
+      // Если кальян недоступен, устанавливаем hookah = false и отправляем бронь
+      state.hookah = false;
+      await sendBooking(ctx);
       break;
   }
 });
@@ -804,16 +730,227 @@ function createInlineKeyboard(
 
   const inlineKeyboard = buttons.map((btn) => [btn]);
   inlineKeyboard.push([
-    { text: "Завершить выбор ✅", callback_data: "finish_selection" },
+    { text: 'Завершить выбор ✅', callback_data: 'finish_selection' },
   ]);
 
   return { reply_markup: { inline_keyboard: inlineKeyboard } };
 }
 
+// === Функция отправки брони ===
+async function sendBooking(ctx: MyContext) {
+  const state = ctx.session!;
+
+  // --- Анимация отправки брони
+  const sendMsg = await ctx.reply('📤 Отправляем бронь...');
+  const sendId = sendMsg.message_id;
+  let sendProgress = 0;
+  const sendBarLen = 6; // ✅ фиксируем длину прогресс-бара
+
+  const sendTimer = setInterval(async () => {
+    sendProgress += Math.floor(Math.random() * 15);
+    if (sendProgress > 100) sendProgress = 100;
+    const filled = Math.floor((sendProgress / 100) * sendBarLen);
+    const bar = '🟩'.repeat(filled) + '⬛'.repeat(sendBarLen - filled);
+    try {
+      await ctx.telegram.editMessageText(
+        ctx.chat!.id,
+        sendId,
+        undefined,
+        `📤 Отправка данных: ${bar} ${sendProgress}%`
+      );
+    } catch {}
+    if (sendProgress >= 100) clearInterval(sendTimer);
+  }, 500);
+
+  // --- POST запросы
+  state.postRequestsErrors = [];
+
+  const bookingsArray = state.selectedOptions!.map((sheetId) => ({
+    sheetId,
+    date: new Date().toLocaleString(),
+    name: state.name,
+    phone: state.phone,
+    seats: state.places,
+    nickname: ctx.from?.username || '',
+    hookah: state.hookah === true ? 1 : 0,
+  }));
+
+  const body = { bookings: bookingsArray };
+  const resp = await fetchWithTimeout(
+    GS_URL,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      redirect: 'follow',
+    },
+    20000
+  );
+
+  const json: GoogleSheetApiPostResponseArray = await resp.json(); // массив результатов
+  console.log(body, json);
+
+  sheetsCache.data = null;
+
+  // собираем ошибки по листам
+  json.forEach((res: any) => {
+    if (!res.ok && res.type === 'SEATS_CHANGED') {
+      const title = state.optionsForSelect?.get(res.sheetId)?.title;
+      if (state.postRequestsErrors)
+        state.postRequestsErrors.push(`${title} - осталось ${res.available}`);
+    }
+  });
+
+  clearInterval(sendTimer);
+
+  if (state.postRequestsErrors.length !== 0) {
+    const msg = `В момент бронирования на следующее мероприятие(я) количество доступных мест изменилось:\n${state.postRequestsErrors.join(
+      ','
+    )}.\n Введите количество мест еще раз, пожалуйста.`;
+    return ctx.reply(msg);
+  }
+
+  try {
+    await ctx.telegram.deleteMessage(ctx.chat!.id, sendId);
+  } catch (e) {
+    console.warn('⚠️ Не удалось удалить сообщение:', e);
+  }
+  ctx.replyWithSticker(
+    'CAACAgIAAxkBAAIJ_mdEY7JQtx_hqkGl5023DkZ9pWdYAAIMYgACuyMYShJp1N-PPHrRNgQ'
+  );
+  ctx.reply(
+    `${getRandomMessage(
+      bookingSuccessMessages
+    )}\n\nПросьба предупредить, если ваши планы изменятся! 
+
+Встреча гостей с 19:00 до 19:50, приходите, пожалуйста, заранее, за минут 30-40 до начала.
+
+‼️ Важно: все брони снимаются за 10 минут до начала мероприятия, пожалуйста, не опаздывайте ☺️
+
+Ждем Вас по адресу ул. Кальварийская, 21 🙌`,
+    mainMenu
+  );
+  ctx.replyWithDocument({
+    source: 'assets/rules.pdf',
+    filename: 'Правила посещения клуба.pdf',
+  });
+  ctx.session = {};
+}
+
+// === Функция обновления брони ===
+async function updateBooking(ctx: MyContext) {
+  const state = ctx.session!;
+
+  // --- Анимация отправки изменений
+  const sendMsg = await ctx.reply('📤 Отправляем изменения...');
+  const sendId = sendMsg.message_id;
+  let sendProgress = 0;
+  const sendBarLen = 6;
+
+  const sendTimer = setInterval(async () => {
+    sendProgress += Math.floor(Math.random() * 15);
+    if (sendProgress > 100) sendProgress = 100;
+    const filled = Math.floor((sendProgress / 100) * sendBarLen);
+    const bar = '🟩'.repeat(filled) + '⬛'.repeat(sendBarLen - filled);
+    try {
+      await ctx.telegram.editMessageText(
+        ctx.chat!.id,
+        sendId,
+        undefined,
+        `📤 Отправка изменений: ${bar} ${sendProgress}%`
+      );
+    } catch {}
+    if (sendProgress >= 100) clearInterval(sendTimer);
+  }, 500);
+
+  // --- POST-запрос на обновление
+  state.postRequestsErrors = [];
+
+  const bookingsArray = state.selectedOptions!.map((sheetId) => ({
+    action: 'update',
+    sheetId,
+    phone: state.phone,
+    seats: state.places!,
+    hookah: state.hookah === true ? 1 : 0,
+  }));
+  const body = { bookings: bookingsArray };
+  const resp = await fetchWithTimeout(
+    GS_URL,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      redirect: 'follow',
+    },
+    20000
+  );
+
+  const json: GoogleSheetApiPostResponseArray = await resp.json(); // массив результатов
+  console.log(body, json);
+
+  sheetsCache.data = null;
+  sheetsCache.timestamp = 0;
+
+  // собираем ошибки по листам
+  json.forEach((res: any) => {
+    if (!res.ok && res.type === 'SEATS_CHANGED') {
+      const title = state.optionsForSelect?.get(res.sheetId)?.title;
+      if (state.postRequestsErrors)
+        state.postRequestsErrors.push(`${title} - осталось ${res.available}`);
+    }
+  });
+
+  clearInterval(sendTimer);
+
+  if (state.postRequestsErrors.length !== 0) {
+    const msg = `В момент бронирования на следующее мероприятие(я) количество доступных мест изменилось:\n${state.postRequestsErrors.join(
+      ','
+    )}.\n Введите количество мест еще раз, пожалуйста.`;
+    await ctx.telegram.editMessageText(ctx.chat!.id, sendId, undefined, msg);
+    ctx.session = {};
+    return;
+  }
+
+  await ctx.telegram.editMessageText(
+    ctx.chat!.id,
+    sendId,
+    undefined,
+    getRandomMessage(bookingUpdatedResponses)
+  );
+  ctx.session = {};
+}
+
+// ===  Обработка выбора кальяна ===
+
+// Подписка на все коллбэки кальяна
+bot.action(/hookah_(yes|no)/, async (ctx) => {
+  if (!ctx.session) {
+    await ctx.reply('⚠️ Сессия сброшена. Начнем заново.', mainMenu);
+    return;
+  }
+  const choice = ctx.match[1]; // "yes" или "no"
+
+  // Сохраняем в state
+  ctx.session!.hookah = choice === 'yes';
+
+  // Удаляем сообщение с кнопками
+  await ctx.answerCbQuery();
+  try {
+    await ctx.deleteMessage();
+  } catch {}
+
+  // Продолжаем процесс бронирования или обновления
+  if (ctx.session!.action === 'edit') {
+    await updateBooking(ctx);
+  } else {
+    await sendBooking(ctx);
+  }
+});
+
 // === Обработка выбора ===
 bot.action(/^select_(\d+)$/, async (ctx) => {
   if (!ctx.session) {
-    await ctx.reply("⚠️ Сессия сброшена. Давайте начнем сначала.", mainMenu);
+    await ctx.reply('⚠️ Сессия сброшена. Давайте начнем сначала.', mainMenu);
     return;
   }
   const state = ctx.session;
@@ -833,9 +970,9 @@ bot.action(/^select_(\d+)$/, async (ctx) => {
 });
 
 // === Подтверждение выбора ===
-bot.action("finish_selection", async (ctx) => {
+bot.action('finish_selection', async (ctx) => {
   if (!ctx.session) {
-    await ctx.reply("⚠️ Сессия сброшена. Начнем заново.", mainMenu);
+    await ctx.reply('⚠️ Сессия сброшена. Начнем заново.', mainMenu);
     return;
   }
   const state = ctx.session;
@@ -845,73 +982,73 @@ bot.action("finish_selection", async (ctx) => {
     });
   }
 
-if (state.action === "delete") {
-  // Формируем массив для POST
-  const bookingsArray = state.selectedOptions!.map(sheetId => ({
-    action: "delete",
-    sheetId,
-    phone: state.phone,
-  }));
-  const body = {bookings: bookingsArray}
-  const resp = await fetchWithTimeout(
-    GS_URL,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      redirect: "follow"
-    },
-    20000
-  );
+  if (state.action === 'delete') {
+    // Формируем массив для POST
+    const bookingsArray = state.selectedOptions!.map((sheetId) => ({
+      action: 'delete',
+      sheetId,
+      phone: state.phone,
+    }));
+    const body = { bookings: bookingsArray };
+    const resp = await fetchWithTimeout(
+      GS_URL,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        redirect: 'follow',
+      },
+      20000
+    );
 
-  const json: GoogleSheetApiPostResponseArray = await resp.json(); // вернётся массив с результатами
-  console.log(body, json);
+    const json: GoogleSheetApiPostResponseArray = await resp.json(); // вернётся массив с результатами
+    console.log(body, json);
 
-  // Обновление кэша
-  sheetsCache.data = null;
-  sheetsCache.timestamp = 0;
+    // Обновление кэша
+    sheetsCache.data = null;
+    sheetsCache.timestamp = 0;
 
-  // Обработка ошибок по каждому листу
-  state.postRequestsErrors = [];
-  json.forEach((res: any) => {
-    if (!res.ok && res.type === "SEATS_CHANGED") {
-      const title = state.optionsForSelect?.get(res.sheetId)?.title;
-      if (state.postRequestsErrors) state.postRequestsErrors.push(`${title} - осталось ${res.available}`);
-    }
-  });
+    // Обработка ошибок по каждому листу
+    state.postRequestsErrors = [];
+    json.forEach((res: any) => {
+      if (!res.ok && res.type === 'SEATS_CHANGED') {
+        const title = state.optionsForSelect?.get(res.sheetId)?.title;
+        if (state.postRequestsErrors)
+          state.postRequestsErrors.push(`${title} - осталось ${res.available}`);
+      }
+    });
 
-  await ctx.editMessageText(getRandomMessage(bookingDeletedResponses));
-  ctx.session = {};
-  return;
-}
-
+    await ctx.editMessageText(getRandomMessage(bookingDeletedResponses));
+    ctx.session = {};
+    return;
+  }
 
   const selectedTitles = Array.from(state.optionsForSelect!.values())
     .filter((opt) => state.selectedOptions!.includes(opt.index))
     .map((opt) => opt.title);
 
-  if (state.action === "edit") {
-    state.step = "input_places"; // попросим ввести новое количество мест
+  if (state.action === 'edit') {
+    state.step = 'input_places'; // попросим ввести новое количество мест
     await ctx.editMessageText(
-      `Вы выбрали для редактирования: ${selectedTitles.join(", ")}`
+      `Вы выбрали для редактирования: ${selectedTitles.join(', ')}`
     );
     await ctx.reply(getRandomMessage(seatsRequestMessages));
     await ctx.answerCbQuery();
     return;
   }
 
-  state.step = "input_name";
+  state.step = 'input_name';
 
-  await ctx.editMessageText(`Вы выбрали: ${selectedTitles.join(", ")}`);
+  await ctx.editMessageText(`Вы выбрали: ${selectedTitles.join(', ')}`);
   await ctx.reply(getRandomMessage(nameRequestMessages));
   await ctx.answerCbQuery();
 });
 
 bot.catch((err, ctx) => {
-  console.error("🚨 Глобальная ошибка в боте:", err);
+  console.error('🚨 Глобальная ошибка в боте:', err);
   ctx.reply(
-    "⚠️ Что-то пошло не так при соединении с сервером. Попробуйте еще раз пожалуйста."
+    '⚠️ Что-то пошло не так при соединении с сервером. Попробуйте еще раз пожалуйста.'
   );
 });
 
-bot.launch().then(() => console.log("Бот запущен 🚀"));
+bot.launch().then(() => console.log('Бот запущен 🚀'));
