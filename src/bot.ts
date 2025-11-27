@@ -423,7 +423,7 @@ bot.on('text', async (ctx) => {
   switch (state.step) {
     // === 1. Ввод телефона ===
     case 'input_phone':
-      if (!/^(\+?375\d{9}|\+?79\d{9})$/.test(text)) {
+      if (!/^(\+?(375\d{9}|79\d{9}|370\d{8}|371\d{8}|48\d{9}))$/.test(text)) {
         return ctx.reply(getRandomMessage(incorrectPhoneResponses));
       }
 
