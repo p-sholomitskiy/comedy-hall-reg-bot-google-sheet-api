@@ -286,7 +286,7 @@ function getRandomMessage(messageAray: string[]) {
 async function fetchWithTimeout(
   url: string,
   options: RequestInit = {},
-  timeout = 30000
+  timeout = 30000,
 ): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
@@ -431,7 +431,7 @@ bot.on('text', async (ctx) => {
 
       // --- Отправка стикера
       await ctx.replyWithSticker(
-        'CAACAgIAAxkBAAIJHWdEIT91AAHXkLWFFzYJaX9QKTIoWwAC6V0AAunBIEqsMOs8iagxVTYE'
+        'CAACAgIAAxkBAAIJHWdEIT91AAHXkLWFFzYJaX9QKTIoWwAC6V0AAunBIEqsMOs8iagxVTYE',
       );
 
       // --- Прогресс-бар загрузки
@@ -450,7 +450,7 @@ bot.on('text', async (ctx) => {
             ctx.chat!.id,
             msgId,
             undefined,
-            `⏳ Загрузка данных: ${bar} ${progress}%`
+            `⏳ Загрузка данных: ${bar} ${progress}%`,
           );
         } catch {}
         if (progress >= 100) clearInterval(animateLoad);
@@ -467,7 +467,7 @@ bot.on('text', async (ctx) => {
       const allSheets = await getAllSheets();
       // Брони этого пользователя
       const userBookings = allSheets.filter((sheet: any) =>
-        sheet.data.some((row: any) => row.phone === state.phone)
+        sheet.data.some((row: any) => row.phone === state.phone),
       );
       clearInterval(animateLoad);
 
@@ -496,7 +496,7 @@ bot.on('text', async (ctx) => {
         const totalSeats = b.data.reduce(
           (sum: any, row: any) =>
             row.phone === state.phone ? sum + Number(row.seats) : sum,
-          0
+          0,
         );
         state.optionsForSelect!.set(b.sheetId, {
           index: b.sheetId,
@@ -522,7 +522,7 @@ bot.on('text', async (ctx) => {
           const totalSeats = b.data.reduce(
             (sum: any, row: any) =>
               row.phone === state.phone ? sum + Number(row.seats) : sum,
-            0
+            0,
           );
           msg += `• ${b.party} — ${totalSeats} мест\n`;
         }
@@ -544,14 +544,14 @@ bot.on('text', async (ctx) => {
 
       const selectableSheets = allSheets.filter(
         (sheet: any) =>
-          !userBookings.some((b: any) => b.sheetName === sheet.sheetName)
+          !userBookings.some((b: any) => b.sheetName === sheet.sheetName),
       );
 
       // --- Отправляем inline-кнопки отдельно
       if (state.action === 'delete' || state.action === 'edit') {
         await ctx.reply(
           getRandomMessage(bookingsFoundResponses),
-          createInlineKeyboard(state.optionsForSelect!, state.selectedOptions!)
+          createInlineKeyboard(state.optionsForSelect!, state.selectedOptions!),
         );
       } else if (state.action === 'check') {
         ctx.session = {};
@@ -560,7 +560,7 @@ bot.on('text', async (ctx) => {
         // Доступные для брони (даже если мест нет)
         const freeSheets = selectableSheets.filter((sheet: any) => {
           return !userBookings.some(
-            (b: any) => b.sheetName === sheet.sheetName
+            (b: any) => b.sheetName === sheet.sheetName,
           );
         });
 
@@ -583,7 +583,7 @@ bot.on('text', async (ctx) => {
 
         await ctx.reply(
           getRandomMessage(selectEventMessages),
-          createInlineKeyboard(state.optionsForSelect!, state.selectedOptions!)
+          createInlineKeyboard(state.optionsForSelect!, state.selectedOptions!),
         );
       }
       break;
@@ -604,7 +604,7 @@ bot.on('text', async (ctx) => {
         const placesNum = parseInt(text);
         if (isNaN(placesNum) || placesNum <= 0)
           return ctx.reply(
-            getRandomMessage(incorrectSeatsResponses).replace('MAXSEATS', '')
+            getRandomMessage(incorrectSeatsResponses).replace('MAXSEATS', ''),
           );
         let maxAvailable = 155;
         for (const sheetId of state.selectedOptions!) {
@@ -613,7 +613,7 @@ bot.on('text', async (ctx) => {
           if (option) {
             maxAvailable = Math.min(
               maxAvailable,
-              Number(option.availableSeats) + option.currentSeats
+              Number(option.availableSeats) + option.currentSeats,
             );
           }
         }
@@ -622,8 +622,8 @@ bot.on('text', async (ctx) => {
           return ctx.reply(
             getRandomMessage(incorrectSeatsResponses).replace(
               'MAXSEATS',
-              maxAvailable.toString()
-            )
+              maxAvailable.toString(),
+            ),
           );
         }
 
@@ -663,7 +663,7 @@ bot.on('text', async (ctx) => {
         if (option) {
           maxAvailable = Math.min(
             maxAvailable,
-            Number(option.availableSeats) + option.currentSeats
+            Number(option.availableSeats) + option.currentSeats,
           );
         }
       }
@@ -672,8 +672,8 @@ bot.on('text', async (ctx) => {
         return ctx.reply(
           getRandomMessage(incorrectSeatsResponses).replace(
             'MAXSEATS',
-            maxAvailable.toString()
-          )
+            maxAvailable.toString(),
+          ),
         );
       }
 
@@ -707,7 +707,7 @@ bot.on('text', async (ctx) => {
 // === Inline клавиатура с галочками ===
 function createInlineKeyboard(
   optionsMap: Map<number, SheetOption>,
-  selectedOptions: number[]
+  selectedOptions: number[],
 ) {
   const buttons = Array.from(optionsMap.values()).map((opt: SheetOption) => ({
     text: selectedOptions.includes(opt.index) ? `✅ ${opt.title}` : opt.title,
@@ -742,7 +742,7 @@ async function sendBooking(ctx: MyContext) {
         ctx.chat!.id,
         sendId,
         undefined,
-        `📤 Отправка данных: ${bar} ${sendProgress}%`
+        `📤 Отправка данных: ${bar} ${sendProgress}%`,
       );
     } catch {}
     if (sendProgress >= 100) clearInterval(sendTimer);
@@ -770,7 +770,7 @@ async function sendBooking(ctx: MyContext) {
       body: JSON.stringify(body),
       redirect: 'follow',
     },
-    20000
+    20000,
   );
 
   const json: GoogleSheetApiPostResponseArray = await resp.json(); // массив результатов
@@ -791,7 +791,7 @@ async function sendBooking(ctx: MyContext) {
 
   if (state.postRequestsErrors.length !== 0) {
     const msg = `В момент бронирования на следующее мероприятие(я) количество доступных мест изменилось:\n${state.postRequestsErrors.join(
-      ','
+      ',',
     )}.\n Введите количество мест еще раз, пожалуйста.`;
     return ctx.reply(msg);
   }
@@ -802,19 +802,19 @@ async function sendBooking(ctx: MyContext) {
     console.warn('⚠️ Не удалось удалить сообщение:', e);
   }
   ctx.replyWithSticker(
-    'CAACAgIAAxkBAAIJ_mdEY7JQtx_hqkGl5023DkZ9pWdYAAIMYgACuyMYShJp1N-PPHrRNgQ'
+    'CAACAgIAAxkBAAIJ_mdEY7JQtx_hqkGl5023DkZ9pWdYAAIMYgACuyMYShJp1N-PPHrRNgQ',
   );
   ctx.reply(
     `${getRandomMessage(
-      bookingSuccessMessages
+      bookingSuccessMessages,
     )}\n\nПросьба предупредить, если ваши планы изменятся! 
 
-Встреча гостей с 19:00 до 19:50, приходите, пожалуйста, заранее, за минут 30-40 до начала.
+Встреча гостей начинается за час, приходите, пожалуйста, заранее, за минут 30-40 до начала шоу.
 
 ‼️ Важно: все брони снимаются за 10 минут до начала мероприятия, пожалуйста, не опаздывайте ☺️
 
 Ждем Вас по адресу ул. Кальварийская, 21 🙌`,
-    mainMenu
+    mainMenu,
   );
   ctx.replyWithDocument({
     source: 'assets/rules.pdf',
@@ -843,7 +843,7 @@ async function updateBooking(ctx: MyContext) {
         ctx.chat!.id,
         sendId,
         undefined,
-        `📤 Отправка изменений: ${bar} ${sendProgress}%`
+        `📤 Отправка изменений: ${bar} ${sendProgress}%`,
       );
     } catch {}
     if (sendProgress >= 100) clearInterval(sendTimer);
@@ -868,7 +868,7 @@ async function updateBooking(ctx: MyContext) {
       body: JSON.stringify(body),
       redirect: 'follow',
     },
-    20000
+    20000,
   );
 
   const json: GoogleSheetApiPostResponseArray = await resp.json(); // массив результатов
@@ -890,7 +890,7 @@ async function updateBooking(ctx: MyContext) {
 
   if (state.postRequestsErrors.length !== 0) {
     const msg = `В момент бронирования на следующее мероприятие(я) количество доступных мест изменилось:\n${state.postRequestsErrors.join(
-      ','
+      ',',
     )}.\n Введите количество мест еще раз, пожалуйста.`;
     await ctx.telegram.editMessageText(ctx.chat!.id, sendId, undefined, msg);
     ctx.session = {};
@@ -901,7 +901,7 @@ async function updateBooking(ctx: MyContext) {
     ctx.chat!.id,
     sendId,
     undefined,
-    getRandomMessage(bookingUpdatedResponses)
+    getRandomMessage(bookingUpdatedResponses),
   );
   ctx.session = {};
 }
@@ -950,7 +950,7 @@ bot.action(/^select_(\d+)$/, async (ctx) => {
 
   await ctx.editMessageReplyMarkup(
     createInlineKeyboard(state.optionsForSelect, state.selectedOptions)
-      .reply_markup
+      .reply_markup,
   );
   await ctx.answerCbQuery();
 });
@@ -984,7 +984,7 @@ bot.action('finish_selection', async (ctx) => {
         body: JSON.stringify(body),
         redirect: 'follow',
       },
-      20000
+      20000,
     );
 
     const json: GoogleSheetApiPostResponseArray = await resp.json(); // вернётся массив с результатами
@@ -1016,7 +1016,7 @@ bot.action('finish_selection', async (ctx) => {
   if (state.action === 'edit') {
     state.step = 'input_places'; // попросим ввести новое количество мест
     await ctx.editMessageText(
-      `Вы выбрали для редактирования: ${selectedTitles.join(', ')}`
+      `Вы выбрали для редактирования: ${selectedTitles.join(', ')}`,
     );
     await ctx.reply(getRandomMessage(seatsRequestMessages));
     await ctx.answerCbQuery();
@@ -1036,7 +1036,7 @@ bot.action('finish_selection', async (ctx) => {
         .join(', ');
       await ctx.answerCbQuery();
       await ctx.reply(
-        `К сожалению, на мероприятие(я) ${titles} нет мест для регистрации. Выберите другое событие.`
+        `К сожалению, на мероприятие(я) ${titles} нет мест для регистрации. Выберите другое событие.`,
       );
       return;
     }
@@ -1052,7 +1052,7 @@ bot.action('finish_selection', async (ctx) => {
 bot.catch((err, ctx) => {
   console.error('🚨 Глобальная ошибка в боте:', err);
   ctx.reply(
-    '⚠️ Что-то пошло не так при соединении с сервером. Попробуйте еще раз пожалуйста.'
+    '⚠️ Что-то пошло не так при соединении с сервером. Попробуйте еще раз пожалуйста.',
   );
 });
 
