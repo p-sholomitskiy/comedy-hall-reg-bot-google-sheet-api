@@ -65,8 +65,8 @@ export async function updateBookingRows(spreadsheetId, ctx, state) {
     const mappedRows = getMapedRowsBySheetId(state.selectedOptions, state.allTablesData, state.phone);
     const data = [
         state.places || '',
-        state.hookah === true ? 1 : '',
         ctx.from?.username || 'no_nickname',
+        state.hookah === true ? 1 : '',
         state.isTableForTwo === true ? 1 : '',
     ];
     const createLogRecord = () => {

@@ -103,8 +103,8 @@ export async function updateBookingRows(
   );
   const data = [
     state.places || '',
-    state.hookah === true ? 1 : '',
     ctx.from?.username || 'no_nickname',
+    state.hookah === true ? 1 : '',
     state.isTableForTwo === true ? 1 : '',
   ];
 
