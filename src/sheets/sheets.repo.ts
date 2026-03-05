@@ -77,8 +77,7 @@ export async function getAllSheetsData(
     const partyName = titleCell?.values?.[0]?.[0] ?? '';
     const seats = Number(seatsCell?.values?.[0]?.[0] ?? 0);
     const hookah = Number(hookahCell?.values?.[0]?.[0] ?? 0);
-    const suggestTable =
-      suggestTableCell?.values?.[0]?.[0] === 'TRUE';
+    const suggestTable = suggestTableCell?.values?.[0]?.[0] === 'TRUE';
     const tableCost = Number(tableCostCell?.values?.[0]?.[0] ?? 0);
     const tables = Number(tableCell?.values?.[0]?.[0] ?? 0);
     const rows = rowsRange?.values ?? [];
@@ -107,7 +106,6 @@ export async function getAllSheetsData(
       bookings: mappedRows,
     });
   }
-
   return result;
 }
 
@@ -143,20 +141,50 @@ export async function batchUpdateRowsByMap(
 
 export async function appendRowToSheets(
   spreadsheetId: string,
-  sheetTitles: string[],
+  sheetTitles: [number, string][],
   rowValues: (string | number | null)[],
 ) {
-  for (const title of sheetTitles) {
-    await sheetsClient.spreadsheets.values.append({
-      spreadsheetId,
-      range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`, // или твой BOOKINGS диапазон
-      valueInputOption: 'USER_ENTERED',
-      insertDataOption: 'INSERT_ROWS',
-      requestBody: {
-        values: [rowValues],
-      },
-    });
-  }
+  await Promise.all(
+    sheetTitles.map(async ([sheetId, title]) => {
+      const appendResponse = await sheetsClient.spreadsheets.values.append({
+        spreadsheetId,
+        range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`, // или твой BOOKINGS диапазон
+        valueInputOption: 'USER_ENTERED',
+        insertDataOption: 'INSERT_ROWS',
+        requestBody: {
+          values: [rowValues],
+        },
+      });
+      const updatedRange = appendResponse.data.updates?.updatedRange; // "Sheet1!A5:B5"
+      const rowMatch = updatedRange?.match(/![A-Z]+(\d+):/);
+      const rowNumber = rowMatch ? Number(rowMatch[1]) : undefined;
+
+      await sheetsClient.spreadsheets.batchUpdate({
+        spreadsheetId, // ⚠️ обязательно на уровне метода, а не внутри requestBody
+        requestBody: {
+          requests: [
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowNumber! - 1, // 0-based
+                  endRowIndex: rowNumber,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    backgroundColor: undefined,
+                    textFormat: undefined,
+                  },
+                },
+                fields: 'userEnteredFormat(backgroundColor,textFormat)',
+              },
+            },
+          ],
+        },
+      });
+      console.log(sheetId + ' done');
+    }),
+  );
 }
 
 interface SheetMeta {

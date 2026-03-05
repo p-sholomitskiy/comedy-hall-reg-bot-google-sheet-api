@@ -92,8 +92,8 @@ export async function batchUpdateRowsByMap(spreadsheetId, titlesToRowNumber, new
     });
 }
 export async function appendRowToSheets(spreadsheetId, sheetTitles, rowValues) {
-    for (const title of sheetTitles) {
-        await sheetsClient.spreadsheets.values.append({
+    await Promise.all(sheetTitles.map(async ([sheetId, title]) => {
+        const appendResponse = await sheetsClient.spreadsheets.values.append({
             spreadsheetId,
             range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`, // или твой BOOKINGS диапазон
             valueInputOption: 'USER_ENTERED',
@@ -102,7 +102,34 @@ export async function appendRowToSheets(spreadsheetId, sheetTitles, rowValues) {
                 values: [rowValues],
             },
         });
-    }
+        const updatedRange = appendResponse.data.updates?.updatedRange; // "Sheet1!A5:B5"
+        const rowMatch = updatedRange?.match(/![A-Z]+(\d+):/);
+        const rowNumber = rowMatch ? Number(rowMatch[1]) : undefined;
+        await sheetsClient.spreadsheets.batchUpdate({
+            spreadsheetId, // ⚠️ обязательно на уровне метода, а не внутри requestBody
+            requestBody: {
+                requests: [
+                    {
+                        repeatCell: {
+                            range: {
+                                sheetId,
+                                startRowIndex: rowNumber - 1, // 0-based
+                                endRowIndex: rowNumber,
+                            },
+                            cell: {
+                                userEnteredFormat: {
+                                    backgroundColor: undefined,
+                                    textFormat: undefined,
+                                },
+                            },
+                            fields: 'userEnteredFormat(backgroundColor,textFormat)',
+                        },
+                    },
+                ],
+            },
+        });
+        console.log(sheetId + ' done');
+    }));
 }
 /**
  * sheetsMeta: массив метаданных листов (title + sheetId)
