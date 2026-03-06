@@ -70,12 +70,12 @@ export async function addNewBooking(
   ctx: MyContext,
   state: UserSession,
 ) {
-  const titlesForBooking =
-    state.selectedOptions?.map(
-      (sheetId) =>
-        state.allTablesData?.find((sheet) => sheet.sheetId === sheetId)
-          ?.sheetName ?? '',
-    ) ?? [];
+  const titlesForBooking: [number, string][] =
+    state.selectedOptions?.map((sheetId) => [
+      sheetId,
+      state.allTablesData?.find((sheet) => sheet.sheetId === sheetId)
+        ?.sheetName ?? '',
+    ]) ?? [];
   const bookingData = [
     new Date().toISOString(),
     state.name || '',
@@ -85,6 +85,8 @@ export async function addNewBooking(
     state.hookah === true ? 1 : '',
     state.isTableForTwo === true ? 1 : '',
   ];
+
+  console.log(titlesForBooking);
   console.log(
     `new booking: ${bookingData.join(' | ')} in ${titlesForBooking.join(' | ')}`,
   );
