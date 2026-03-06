@@ -86,7 +86,6 @@ export async function addNewBooking(
     state.isTableForTwo === true ? 1 : '',
   ];
 
-  console.log(titlesForBooking);
   console.log(
     `new booking: ${bookingData.join(' | ')} in ${titlesForBooking.join(' | ')}`,
   );
@@ -119,7 +118,7 @@ export async function updateBookingRows(
   };
 
   console.log(
-    `new updatet booking: ${[state.name, state.phone, ...data].join(' | ')} in ${createLogRecord()}`,
+    `new update booking: ${[state.name, state.phone, ...data].join(' | ')} in ${createLogRecord()}`,
   );
 
   await batchUpdateRowsByMap(spreadsheetId, mappedRows, data);
