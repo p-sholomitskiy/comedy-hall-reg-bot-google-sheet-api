@@ -128,7 +128,6 @@ export async function appendRowToSheets(spreadsheetId, sheetTitles, rowValues) {
                 ],
             },
         });
-        console.log(sheetId + ' done');
     }));
 }
 /**

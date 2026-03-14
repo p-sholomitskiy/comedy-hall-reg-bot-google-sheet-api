@@ -61,7 +61,6 @@ export async function addNewBooking(spreadsheetId, ctx, state) {
         state.hookah === true ? 1 : '',
         state.isTableForTwo === true ? 1 : '',
     ];
-    console.log(titlesForBooking);
     console.log(`new booking: ${bookingData.join(' | ')} in ${titlesForBooking.join(' | ')}`);
     await appendRowToSheets(spreadsheetId, titlesForBooking, bookingData);
 }
@@ -80,7 +79,7 @@ export async function updateBookingRows(spreadsheetId, ctx, state) {
         }
         return record;
     };
-    console.log(`new updatet booking: ${[state.name, state.phone, ...data].join(' | ')} in ${createLogRecord()}`);
+    console.log(`new update booking: ${[state.name, state.phone, ...data].join(' | ')} in ${createLogRecord()}`);
     await batchUpdateRowsByMap(spreadsheetId, mappedRows, data);
 }
 export async function deleteBookingRow(spreadsheetId, ctx, state) {
