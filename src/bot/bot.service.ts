@@ -316,7 +316,8 @@ bot.on('text', async (ctx) => {
           if (canSuggestTable) {
             state.step = 'input_table';
             return ctx.reply(
-              `Желаете расположиться за столом вдвоём? Доплата ${tableCost} рублей за стол.`,
+              `Желаете расположиться за столиком только вдвоём? 
+Оплата в таком случае — ${tableCost} рублей за двоих. 🙌`,
               {
                 reply_markup: {
                   inline_keyboard: [
@@ -391,7 +392,8 @@ bot.on('text', async (ctx) => {
         if (canSuggestTable) {
           state.step = 'input_table';
           return ctx.reply(
-            `Желаете расположиться за столом вдвоём? Доплата ${tableCost} рублей за стол.`,
+            `Желаете расположиться за столиком только вдвоём? 
+Оплата в таком случае — ${tableCost} рублей за двоих. 🙌`,
             {
               reply_markup: {
                 inline_keyboard: [
