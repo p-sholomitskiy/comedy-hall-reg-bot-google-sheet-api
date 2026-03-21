@@ -38,11 +38,15 @@ export function validatePhoneNumber(phone) {
     return /^(375\d{9}|79\d{9}|370\d{8}|371\d{8}|48\d{9})$/.test(phone);
 }
 export function validateGuestName(name) {
+    if (name.toLowerCase().includes('отмен')) {
+        return 'idiot';
+    }
     return /^[A-Za-zА-Яа-яЁё\s'-]+$/.test(name);
 }
 export function validatePositiveNumber(number) {
-    if (isNaN(number) || number <= 0)
+    if (isNaN(number) || number <= 0) {
         return false;
+    }
     else
         return true;
 }

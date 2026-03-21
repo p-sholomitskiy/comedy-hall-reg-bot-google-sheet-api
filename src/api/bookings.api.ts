@@ -57,12 +57,16 @@ export function validatePhoneNumber(phone: string) {
 }
 
 export function validateGuestName(name: string) {
+  if (name.toLowerCase().includes('отмен')) {
+    return 'idiot';
+  }
   return /^[A-Za-zА-Яа-яЁё\s'-]+$/.test(name);
 }
 
 export function validatePositiveNumber(number: number) {
-  if (isNaN(number) || number <= 0) return false;
-  else return true;
+  if (isNaN(number) || number <= 0) {
+    return false;
+  } else return true;
 }
 
 export async function addNewBooking(

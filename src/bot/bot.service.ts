@@ -18,6 +18,7 @@ import {
   seatsRequestMessages,
   selectEventMessages,
   welcomeMessage,
+  zeroSeatsMessages,
 } from '../api/messages.api.js';
 import {
   getRandomMessage,
@@ -270,6 +271,10 @@ bot.on('text', async (ctx) => {
 
     // === 2. Ввод имени ===
     case 'input_name':
+      if (validateGuestName(text) === 'idiot')
+        return ctx.reply(
+          'ХА ХА ХА, отмена, ты пойман за руку, как дешевка. Попробуй еще. ',
+        );
       if (!validateGuestName(text)) {
         return ctx.reply(getRandomMessage(incorrectNameResponses));
       }
@@ -283,7 +288,9 @@ bot.on('text', async (ctx) => {
       if (state.action === 'edit') {
         const placesNum = parseInt(text);
         if (!validatePositiveNumber(placesNum)) {
-          getRandomMessage(incorrectSeatsResponses).replace('MAXSEATS', '');
+          return ctx.reply(
+            getRandomMessage(zeroSeatsMessages).replace('MAXSEATS', ''),
+          );
         }
         let maxAvailable = 155;
         for (const sheetId of state.selectedOptions!) {
@@ -359,7 +366,9 @@ bot.on('text', async (ctx) => {
 
       const placesNum = parseInt(text);
       if (!validatePositiveNumber(placesNum)) {
-        getRandomMessage(incorrectSeatsResponses).replace('MAXSEATS', '');
+        return ctx.reply(
+          getRandomMessage(zeroSeatsMessages).replace('MAXSEATS', ''),
+        );
       }
       let maxAvailable = 155;
       for (const sheetId of state.selectedOptions!) {
