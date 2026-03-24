@@ -37,7 +37,7 @@ export function getMapedRowsBySheetId(
   for (const sheetId of sheetIdList) {
     const sheet = allSheets.find((sheet) => sheet.sheetId === sheetId);
     const index =
-      sheet?.bookings.findIndex((findedSheet) => findedSheet.phone === phone) ||
+      sheet?.bookings.findIndex((findedSheet) => findedSheet.phone === phone) ??
       -1;
     if (index !== -1) {
       mappedTitelWithRows.set(sheet!.sheetName, index + BOOKINGS_START_ROW);
