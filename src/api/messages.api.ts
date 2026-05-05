@@ -27,8 +27,7 @@ export const welcomeMessage = `Здравствуйте!
 🍹 <b>Услуги клуба</b>:
 
 • <b>Еда от ресторана Babe</b>
-🛎️ Можно заранее заказать по телефону: +375291063141 или через Direct:
-<a href="https://www.instagram.com/babe_minsk?igsh=OXE2MGY3a3o4Zzdp">Instagram</a>
+🛎️ Можно заранее заказать через Direct: <a href="https://www.instagram.com/babe_minsk?igsh=OXE2MGY3a3o4Zzdp">Instagram</a> или на месте.
 • <b>Напитки и кальян</b>
 🚬 Кальян разрешён только в специальных зонах. Бот уточнит при бронировании, нужен ли он Вам.
 ⚠️ Курение вейпов, IQOS и др. в клубе запрещено!
@@ -38,6 +37,11 @@ export const welcomeMessage = `Здравствуйте!
 ✦ <a href="https://t.me/standupcomedyhall">Telegram</a>
 
 Ждём в гости — будет смешно! 🤗
+
+По иным вопросам можете обращаться:
+Telegram — @standupcomedyhallminsk
+Viber/Whats App — +375291129579
+Звонки с 11:00 до 19:00.
 
 С уважением,
 Stand Up Comedy Hall ❤️`;
