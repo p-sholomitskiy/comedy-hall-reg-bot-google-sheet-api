@@ -483,6 +483,5 @@ bot.action('finish_selection', async (ctx) => {
 });
 bot.catch((err, ctx) => {
     console.error('🚨 Глобальная ошибка в боте:', err);
-    ctx.reply('⚠️ Что-то пошло не так при соединении с сервером. Попробуйте еще раз пожалуйста.');
 });
 bot.launch().then(() => console.log('Бот запущен 🚀'));
