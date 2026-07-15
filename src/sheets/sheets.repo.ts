@@ -1,6 +1,7 @@
 import { sheets_v4 } from 'googleapis';
 import { sheetsClient } from '../google/sheets.client.js';
 import {
+  DATA_RANGE_COUNT,
   DataCells,
   IBookingRow,
   ISheetData,
@@ -44,11 +45,11 @@ export async function getAllSheetsData(
     const sheetName = escapeSheetTitle(title || '');
     ranges.push(`${sheetName}!${DataCells.PARTY_NAME}`);
     ranges.push(`${sheetName}!${DataCells.AVAILABLE_SEATS}`);
+    ranges.push(`${sheetName}!${DataCells.SUGGEST_HOOKAH}`);
     ranges.push(`${sheetName}!${DataCells.AVAILABLE_HOOKAH}`);
     ranges.push(`${sheetName}!${DataCells.SUGGEST_TABLE}`);
     ranges.push(`${sheetName}!${DataCells.AVAILABLE_TABLES}`);
     ranges.push(`${sheetName}!${DataCells.TABLE_COST}`);
-
     ranges.push(`${sheetName}!${DataCells.BOOKINGS}`);
   }
 
@@ -58,24 +59,27 @@ export async function getAllSheetsData(
   });
 
   const valueRanges = response.data.valueRanges ?? [];
+  
   const result: ISheetData[] = [];
 
   for (let i = 0; i < sheets.length; i++) {
-    const base = i * 7; // по 4 диапазона на лист
+    const base = i * DATA_RANGE_COUNT;
     const [
       titleCell,
       seatsCell,
+      suggestHookahCell,
       hookahCell,
       suggestTableCell,
       tableCell,
       tableCostCell,
       rowsRange,
-    ] = valueRanges.slice(base, base + 7);
+    ] = valueRanges.slice(base, base + DATA_RANGE_COUNT);
 
     const { sheetId, title } = sheets[i];
 
     const partyName = titleCell?.values?.[0]?.[0] ?? '';
     const seats = Number(seatsCell?.values?.[0]?.[0] ?? 0);
+    const suggestHookah = suggestHookahCell?.values?.[0]?.[0] === 'TRUE';
     const hookah = Number(hookahCell?.values?.[0]?.[0] ?? 0);
     const suggestTable = suggestTableCell?.values?.[0]?.[0] === 'TRUE';
     const tableCost = Number(tableCostCell?.values?.[0]?.[0] ?? 0);
@@ -100,6 +104,7 @@ export async function getAllSheetsData(
       partyName,
       availableSeats: seats,
       availableHookah: hookah,
+      suggestHookah,
       suggestTable,
       tableCost,
       availableTables: tables,

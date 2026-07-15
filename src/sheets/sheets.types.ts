@@ -17,6 +17,7 @@ export interface ISheetData {
   partyName: string;
   availableSeats: number;
   availableHookah: number;
+  suggestHookah: boolean;
   suggestTable: boolean;
   tableCost: number;
   availableTables: number;
@@ -34,9 +35,12 @@ export interface IGridRange {
 export enum DataCells {
   PARTY_NAME = 'I1',
   AVAILABLE_SEATS = 'R1',
-  AVAILABLE_HOOKAH = 'T1',
+  AVAILABLE_HOOKAH = 'V1',
   AVAILABLE_TABLES = 'P1',
   TABLE_COST = 'N1',
   SUGGEST_TABLE = 'L1',
+  SUGGEST_HOOKAH = 'T1',
   BOOKINGS = 'A2:G',
 }
+
+export const DATA_RANGE_COUNT = Object.keys(DataCells).length;

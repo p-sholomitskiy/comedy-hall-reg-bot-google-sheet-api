@@ -127,6 +127,7 @@ bot.on('text', async (ctx) => {
                     currentSeats: totalSeats || 0,
                     hookah: sheet.availableHookah || 0,
                     suggestTable: sheet.suggestTable,
+                    suggestHookah: sheet.suggestHookah,
                     tableCost: sheet.tableCost,
                     tables: sheet.availableTables,
                 });
@@ -175,6 +176,7 @@ bot.on('text', async (ctx) => {
                         currentSeats: 0,
                         hookah: sheet.availableHookah,
                         suggestTable: sheet.suggestTable,
+                        suggestHookah: sheet.suggestHookah,
                         tableCost: sheet.tableCost,
                         tables: sheet.availableTables,
                     });
@@ -232,11 +234,11 @@ bot.on('text', async (ctx) => {
                     }
                 }
                 // Проверяем доступность кальяна
-                const hookahAvailable = state.selectedOptions?.every((sheetId) => {
+                const canSuggestHookah = state.selectedOptions?.every((sheetId) => {
                     const option = state.optionsForSelect?.get(sheetId);
-                    return option && Number(option.hookah) > 0;
+                    return option && option.suggestHookah && Number(option.hookah) > 0;
                 });
-                if (hookahAvailable) {
+                if (canSuggestHookah) {
                     state.step = 'input_hookah';
                     return ctx.reply('Хотите заказать кальян?', {
                         reply_markup: {
@@ -295,11 +297,11 @@ bot.on('text', async (ctx) => {
                 }
             }
             // Проверяем доступность кальяна
-            const hookahAvailable = state.selectedOptions?.every((sheetId) => {
+            const canSuggestHookah = state.selectedOptions?.every((sheetId) => {
                 const option = state.optionsForSelect?.get(sheetId);
-                return option && Number(option.hookah) > 0;
+                return option && option.suggestHookah && Number(option.hookah) > 0;
             });
-            if (hookahAvailable) {
+            if (canSuggestHookah) {
                 state.step = 'input_hookah';
                 return ctx.reply('Хотите заказать кальян?', {
                     reply_markup: {
@@ -385,11 +387,11 @@ bot.action(/table_(yes|no)/, async (ctx) => {
     }
     catch { }
     // ✅ Проверяем доступность кальяна
-    const hookahAvailable = state.selectedOptions?.every((sheetId) => {
+    const canSuggestHookah = state.selectedOptions?.every((sheetId) => {
         const option = state.optionsForSelect?.get(sheetId);
-        return option && Number(option.hookah) > 0;
+        return option && option.suggestHookah && Number(option.hookah) > 0;
     });
-    if (hookahAvailable) {
+    if (canSuggestHookah) {
         state.step = 'input_hookah';
         return ctx.reply('Хотите заказать кальян?', {
             reply_markup: {

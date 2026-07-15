@@ -1,5 +1,5 @@
 import { sheetsClient } from '../google/sheets.client.js';
-import { DataCells, } from './sheets.types.js';
+import { DATA_RANGE_COUNT, DataCells, } from './sheets.types.js';
 import { START_APPEND_COL, START_UPDATE_COL, END_COL, } from './sheets.constants.js';
 export async function getSheetsProperties(spreadsheetId) {
     const response = await sheetsClient.spreadsheets.get({
@@ -20,6 +20,7 @@ export async function getAllSheetsData(spreadsheetId, sheets) {
         const sheetName = escapeSheetTitle(title || '');
         ranges.push(`${sheetName}!${DataCells.PARTY_NAME}`);
         ranges.push(`${sheetName}!${DataCells.AVAILABLE_SEATS}`);
+        ranges.push(`${sheetName}!${DataCells.SUGGEST_HOOKAH}`);
         ranges.push(`${sheetName}!${DataCells.AVAILABLE_HOOKAH}`);
         ranges.push(`${sheetName}!${DataCells.SUGGEST_TABLE}`);
         ranges.push(`${sheetName}!${DataCells.AVAILABLE_TABLES}`);
@@ -33,11 +34,12 @@ export async function getAllSheetsData(spreadsheetId, sheets) {
     const valueRanges = response.data.valueRanges ?? [];
     const result = [];
     for (let i = 0; i < sheets.length; i++) {
-        const base = i * 7; // по 4 диапазона на лист
-        const [titleCell, seatsCell, hookahCell, suggestTableCell, tableCell, tableCostCell, rowsRange,] = valueRanges.slice(base, base + 7);
+        const base = i * DATA_RANGE_COUNT;
+        const [titleCell, seatsCell, suggestHookahCell, hookahCell, suggestTableCell, tableCell, tableCostCell, rowsRange,] = valueRanges.slice(base, base + DATA_RANGE_COUNT);
         const { sheetId, title } = sheets[i];
         const partyName = titleCell?.values?.[0]?.[0] ?? '';
         const seats = Number(seatsCell?.values?.[0]?.[0] ?? 0);
+        const suggestHookah = suggestHookahCell?.values?.[0]?.[0] === 'TRUE';
         const hookah = Number(hookahCell?.values?.[0]?.[0] ?? 0);
         const suggestTable = suggestTableCell?.values?.[0]?.[0] === 'TRUE';
         const tableCost = Number(tableCostCell?.values?.[0]?.[0] ?? 0);
@@ -61,6 +63,7 @@ export async function getAllSheetsData(spreadsheetId, sheets) {
             partyName,
             availableSeats: seats,
             availableHookah: hookah,
+            suggestHookah,
             suggestTable,
             tableCost,
             availableTables: tables,
