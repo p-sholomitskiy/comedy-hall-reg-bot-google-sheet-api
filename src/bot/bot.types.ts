@@ -9,6 +9,7 @@ export interface SheetOption {
   hookah: number;
   tables: number;
   suggestTable: boolean;
+  suggestHookah: boolean;
   tableCost: number;
 }
 
@@ -33,6 +34,7 @@ export interface UserSession {
   tableCost?: number;
   tables?: number;
   suggestTable?: boolean;
+  suggestHookah?: boolean;
 }
 
 // Расширяем Context
