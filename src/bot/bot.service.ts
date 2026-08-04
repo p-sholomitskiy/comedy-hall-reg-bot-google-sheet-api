@@ -85,25 +85,25 @@ bot.hears('Начать заново', (ctx) => {
 // --- Забронировать
 bot.hears('Забронировать', (ctx) => {
   ctx.session = { step: 'input_phone', action: 'reserve', selectedOptions: [] };
-  ctx.reply(getRandomMessage(phoneRequestMessages));
+  ctx.replyWithHTML(getRandomMessage(phoneRequestMessages));
 });
 
 // --- Проверка брони
 bot.hears('Проверить бронь', async (ctx) => {
   ctx.session = { step: 'input_phone', action: 'check' }; // используем action "check"
-  ctx.reply(getRandomMessage(phoneRequestMessages));
+  ctx.replyWithHTML(getRandomMessage(phoneRequestMessages));
 });
 
 // --- Отмена бронирования
 bot.hears('Отменить бронь', async (ctx) => {
   ctx.session = { step: 'input_phone', action: 'delete', selectedOptions: [] };
-  await ctx.reply(getRandomMessage(phoneRequestMessages));
+  await ctx.replyWithHTML(getRandomMessage(phoneRequestMessages));
 });
 
 // --- Изменение бронирования
 bot.hears('Изменить бронь', async (ctx) => {
   ctx.session = { step: 'input_phone', action: 'edit', selectedOptions: [] };
-  await ctx.reply(getRandomMessage(phoneRequestMessages));
+  await ctx.replyWithHTML(getRandomMessage(phoneRequestMessages));
 });
 
 bot.on('text', async (ctx) => {
@@ -476,7 +476,7 @@ bot.action(/hookah_(yes|no)/, async (ctx) => {
   await ctx.answerCbQuery();
   try {
     await ctx.deleteMessage();
-  } catch {}
+  } catch { }
 
   // Продолжаем процесс бронирования или обновления
   try {
@@ -522,7 +522,7 @@ bot.action(/table_(yes|no)/, async (ctx) => {
   await ctx.answerCbQuery();
   try {
     await ctx.deleteMessage();
-  } catch {}
+  } catch { }
 
   // ✅ Проверяем доступность кальяна
   const canSuggestHookah = state.selectedOptions?.every((sheetId) => {

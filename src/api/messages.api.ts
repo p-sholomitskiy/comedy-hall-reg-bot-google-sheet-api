@@ -50,11 +50,14 @@ Stand Up Comedy Hall ❤️`;
 
 export const phoneRequestMessages = [
   `Пожалуйста, укажите номер телефона, в формате:
-🇧🇾 375XXXXXXXXX
-🇷🇺 79XXXXXXXXX
-🇱🇹 370XXXXXXXX
-🇱🇻 371XXXXXXXX
-🇵🇱 48XXXXXXXXX`,
+375XXXXXXXXX
+79XXXXXXXXX
+370XXXXXXXX
+371XXXXXXXX
+48XXXXXXXXX
+
+<b>❣️Важно:
+Номер необходимо указывать без знака + и точно в формате, указанном выше.</b>`,
 ];
 
 export const incorrectPhoneResponses = [
