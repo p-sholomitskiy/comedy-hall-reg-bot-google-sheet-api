@@ -24,7 +24,7 @@ export const PARTY_META_RANGES = {
     },
 };
 export const START_APPEND_COL = 'A';
-export const START_UPDATE_COL = 'D';
-export const END_COL = 'G';
+export const START_UPDATE_COL = 'C';
+export const END_COL = 'H';
 export const BOOKINGS_START_ROW = 2; // BOOKINGS = "A2:G"
-export const PHONE_COLUMN_INDEX = 2; // column "C"
+export const PHONE_COLUMN_INDEX = 3; // column "D"

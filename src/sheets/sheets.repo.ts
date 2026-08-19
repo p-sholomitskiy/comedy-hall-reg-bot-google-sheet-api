@@ -88,12 +88,13 @@ export async function getAllSheetsData(
     const mappedRows: IBookingRow[] = rows.map((record) => {
       return {
         date: record[0],
-        name: record[1],
-        phone: record[2],
-        seats: record[3],
-        nickname: record[4],
-        isHookahNeeded: record[5] ? true : false,
-        isForTwo: record[6] ? true : false,
+        check: record[1],
+        name: record[2],
+        phone: record[3],
+        seats: record[4],
+        nickname: record[5],
+        isHookahNeeded: record[6] ? true : false,
+        isForTwo: record[7] ? true : false,
       };
     });
 
@@ -119,6 +120,7 @@ export async function batchUpdateRowsByMap(
   titlesToRowNumber: Map<string, number>,
   newValues: (string | number | null)[],
 ) {
+  console.log('newValues', newValues)
   const data: sheets_v4.Schema$ValueRange[] = [];
 
   for (const [sheetTitle, rowNumberInSheet] of titlesToRowNumber.entries()) {
@@ -147,33 +149,72 @@ export async function batchUpdateRowsByMap(
 export async function appendRowToSheets(
   spreadsheetId: string,
   sheetTitles: [number, string][],
-  rowValues: (string | number | null)[],
+  rowValues: (string | number | boolean | null)[],
 ) {
   await Promise.all(
     sheetTitles.map(async ([sheetId, title]) => {
-      const appendResponse = await sheetsClient.spreadsheets.values.append({
+      // Получаем все данные листа в диапазоне A:H
+      const valuesResponse = await sheetsClient.spreadsheets.values.get({
         spreadsheetId,
-        range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`, // или твой BOOKINGS диапазон
+        range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`,
+      });
+
+      const values = valuesResponse.data.values ?? [];
+
+      // Ищем последнюю строку, в которой заполнена хотя бы одна ячейка
+      const lastRowIndex = values.reduce(
+        (lastIndex, row, index) =>
+          row.some((value) => value !== undefined && value !== '')
+            ? index
+            : lastIndex,
+        BOOKINGS_START_ROW - 2,
+      );
+
+      const rowNumber = lastRowIndex + 2;
+
+      // Вставляем новую физическую строку
+      await sheetsClient.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              insertDimension: {
+                range: {
+                  sheetId,
+                  dimension: 'ROWS',
+                  startIndex: rowNumber - 1,
+                  endIndex: rowNumber,
+                },
+                inheritFromBefore: true,
+              },
+            },
+          ],
+        },
+      });
+
+      // Записываем значения в A:H
+      await sheetsClient.spreadsheets.values.update({
+        spreadsheetId,
+        range: `${escapeSheetTitle(title)}!A${rowNumber}:H${rowNumber}`,
         valueInputOption: 'USER_ENTERED',
-        insertDataOption: 'INSERT_ROWS',
         requestBody: {
           values: [rowValues],
         },
       });
-      const updatedRange = appendResponse.data.updates?.updatedRange; // "Sheet1!A5:B5"
-      const rowMatch = updatedRange?.match(/![A-Z]+(\d+):/);
-      const rowNumber = rowMatch ? Number(rowMatch[1]) : undefined;
 
+      // Очищаем форматирование новой строки и устанавливаем checkbox в B
       await sheetsClient.spreadsheets.batchUpdate({
-        spreadsheetId, // ⚠️ обязательно на уровне метода, а не внутри requestBody
+        spreadsheetId,
         requestBody: {
           requests: [
             {
               repeatCell: {
                 range: {
                   sheetId,
-                  startRowIndex: rowNumber! - 1, // 0-based
+                  startRowIndex: rowNumber - 1,
                   endRowIndex: rowNumber,
+                  startColumnIndex: 0,
+                  endColumnIndex: 8,
                 },
                 cell: {
                   userEnteredFormat: {
@@ -182,6 +223,24 @@ export async function appendRowToSheets(
                   },
                 },
                 fields: 'userEnteredFormat(backgroundColor,textFormat)',
+              },
+            },
+            {
+              setDataValidation: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowNumber - 1,
+                  endRowIndex: rowNumber,
+                  startColumnIndex: 1,
+                  endColumnIndex: 2,
+                },
+                rule: {
+                  condition: {
+                    type: 'BOOLEAN',
+                  },
+                  showCustomUi: true,
+                  strict: true,
+                },
               },
             },
           ],
@@ -231,4 +290,33 @@ export async function batchDeleteRowsByMap(
   });
 }
 
-// export async function getSheetAllData()
+async function setCheckbox(
+  spreadsheetId: string,
+  sheetId: number,
+  rowNumber: number,
+) {
+  await sheetsClient.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      requests: [
+        {
+          setDataValidation: {
+            range: {
+              sheetId,
+              startRowIndex: rowNumber - 1,
+              endRowIndex: rowNumber,
+              startColumnIndex: 1,
+              endColumnIndex: 2,
+            },
+            rule: {
+              condition: {
+                type: 'BOOLEAN',
+              },
+              showCustomUi: true,
+            },
+          },
+        },
+      ],
+    },
+  });
+}

@@ -26,10 +26,10 @@ export const PARTY_META_RANGES = {
 
 export const START_APPEND_COL = 'A' as const;
 
-export const START_UPDATE_COL = 'D' as const;
+export const START_UPDATE_COL = 'C' as const;
 
-export const END_COL = 'G' as const;
+export const END_COL = 'H' as const;
 
 export const BOOKINGS_START_ROW = 2 as const; // BOOKINGS = "A2:G"
 
-export const PHONE_COLUMN_INDEX = 2 as const; // column "C"
+export const PHONE_COLUMN_INDEX = 3 as const; // column "D"

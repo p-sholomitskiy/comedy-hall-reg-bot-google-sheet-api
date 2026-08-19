@@ -82,6 +82,7 @@ export async function addNewBooking(
     ]) ?? [];
   const bookingData = [
     new Date().toISOString(),
+    '',
     state.name || '',
     state.phone || '',
     state.places || '',
@@ -107,6 +108,8 @@ export async function updateBookingRows(
     state.phone!,
   );
   const data = [
+    state.name || '',
+    state.phone || '',
     state.places || '',
     ctx.from?.username || 'no_nickname',
     state.hookah === true ? 1 : '',
