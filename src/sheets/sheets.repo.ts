@@ -153,8 +153,8 @@ export async function appendRowToSheets(
 ) {
   await Promise.all(
     sheetTitles.map(async ([sheetId, title]) => {
-      // Получаем данные листа, чтобы найти последнюю строку,
-      // в которой заполнена хотя бы одна ячейка.
+      // Get existing data to find the last row containing at least one value.
+      // We check all columns because column A can be empty while other columns contain data.
       const valuesResponse = await sheetsClient.spreadsheets.values.get({
         spreadsheetId,
         range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`,
@@ -162,7 +162,7 @@ export async function appendRowToSheets(
 
       const values = valuesResponse.data.values ?? [];
 
-      // Ищем последнюю строку с данными в любой из колонок A:H.
+      // Find the last row where at least one cell in A:H is not empty.
       const lastRowIndex = values.reduce(
         (lastIndex, row, index) =>
           row.some((value) => value !== undefined && value !== '')
@@ -171,10 +171,11 @@ export async function appendRowToSheets(
         BOOKINGS_START_ROW - 2,
       );
 
+      // Convert the zero-based array index to the Google Sheets row number.
       const rowNumber = lastRowIndex + 2;
 
-      // Вставляем новую физическую строку без наследования форматирования
-      // предыдущей строки.
+      // Insert a new physical row without inheriting formatting from the previous row.
+      // This prevents the new row from copying unwanted styles.
       await sheetsClient.spreadsheets.batchUpdate({
         spreadsheetId,
         requestBody: {
@@ -193,7 +194,7 @@ export async function appendRowToSheets(
         },
       });
 
-      // Записываем значения новой строки начиная с колонки A.
+      // Write the row values starting from column A.
       await sheetsClient.spreadsheets.values.update({
         spreadsheetId,
         range: `${escapeSheetTitle(title)}!A${rowNumber}:H${rowNumber}`,
@@ -203,11 +204,12 @@ export async function appendRowToSheets(
         },
       });
 
-      // Очищаем форматирование новой строки и устанавливаем checkbox в колонке B.
+      // Apply the required formatting to the new row.
       await sheetsClient.spreadsheets.batchUpdate({
         spreadsheetId,
         requestBody: {
           requests: [
+            // Add borders to every cell from A to H.
             {
               repeatCell: {
                 range: {
@@ -218,9 +220,64 @@ export async function appendRowToSheets(
                   endColumnIndex: 8,
                 },
                 cell: {
-                  userEnteredFormat: {},
+                  userEnteredFormat: {
+                    borders: {
+                      top: {
+                        style: 'SOLID',
+                      },
+                      bottom: {
+                        style: 'SOLID',
+                      },
+                      left: {
+                        style: 'SOLID',
+                      },
+                      right: {
+                        style: 'SOLID',
+                      },
+                    },
+                  },
                 },
-                fields: 'userEnteredFormat',
+                fields: 'userEnteredFormat.borders',
+              },
+            },
+
+            // Column A — left-aligned text without wrapping.
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowNumber - 1,
+                  endRowIndex: rowNumber,
+                  startColumnIndex: 0,
+                  endColumnIndex: 1,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    horizontalAlignment: 'LEFT',
+                    wrapStrategy: 'CLIP',
+                  },
+                },
+                fields:
+                  'userEnteredFormat.horizontalAlignment,userEnteredFormat.wrapStrategy',
+              },
+            },
+
+            // Column B — centered checkbox.
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowNumber - 1,
+                  endRowIndex: rowNumber,
+                  startColumnIndex: 1,
+                  endColumnIndex: 2,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    horizontalAlignment: 'CENTER',
+                  },
+                },
+                fields: 'userEnteredFormat.horizontalAlignment',
               },
             },
             {
@@ -239,6 +296,44 @@ export async function appendRowToSheets(
                   showCustomUi: true,
                   strict: true,
                 },
+              },
+            },
+
+            // Columns C:D — left-aligned text.
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowNumber - 1,
+                  endRowIndex: rowNumber,
+                  startColumnIndex: 2,
+                  endColumnIndex: 4,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    horizontalAlignment: 'LEFT',
+                  },
+                },
+                fields: 'userEnteredFormat.horizontalAlignment',
+              },
+            },
+
+            // Columns E:H — centered text.
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowNumber - 1,
+                  endRowIndex: rowNumber,
+                  startColumnIndex: 4,
+                  endColumnIndex: 8,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    horizontalAlignment: 'CENTER',
+                  },
+                },
+                fields: 'userEnteredFormat.horizontalAlignment',
               },
             },
           ],
