@@ -175,7 +175,6 @@ export async function appendRowToSheets(
       const rowNumber = lastRowIndex + 2;
 
       // Insert a new physical row without inheriting formatting from the previous row.
-      // This prevents the new row from copying unwanted styles.
       await sheetsClient.spreadsheets.batchUpdate({
         spreadsheetId,
         requestBody: {
@@ -318,7 +317,7 @@ export async function appendRowToSheets(
               },
             },
 
-            // Columns E:H — centered text.
+            // Column E — centered text.
             {
               repeatCell: {
                 range: {
@@ -326,6 +325,44 @@ export async function appendRowToSheets(
                   startRowIndex: rowNumber - 1,
                   endRowIndex: rowNumber,
                   startColumnIndex: 4,
+                  endColumnIndex: 5,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    horizontalAlignment: 'CENTER',
+                  },
+                },
+                fields: 'userEnteredFormat.horizontalAlignment',
+              },
+            },
+
+            // Column F — left-aligned text.
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowNumber - 1,
+                  endRowIndex: rowNumber,
+                  startColumnIndex: 5,
+                  endColumnIndex: 6,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    horizontalAlignment: 'LEFT',
+                  },
+                },
+                fields: 'userEnteredFormat.horizontalAlignment',
+              },
+            },
+
+            // Columns G:H — centered text.
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowNumber - 1,
+                  endRowIndex: rowNumber,
+                  startColumnIndex: 6,
                   endColumnIndex: 8,
                 },
                 cell: {
