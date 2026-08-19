@@ -1,6 +1,6 @@
 import { sheetsClient } from '../google/sheets.client.js';
 import { DATA_RANGE_COUNT, DataCells, } from './sheets.types.js';
-import { START_APPEND_COL, START_UPDATE_COL, END_COL, } from './sheets.constants.js';
+import { BOOKINGS_START_ROW, START_APPEND_COL, START_UPDATE_COL, END_COL, } from './sheets.constants.js';
 export async function getSheetsProperties(spreadsheetId) {
     const response = await sheetsClient.spreadsheets.get({
         spreadsheetId,
@@ -48,12 +48,13 @@ export async function getAllSheetsData(spreadsheetId, sheets) {
         const mappedRows = rows.map((record) => {
             return {
                 date: record[0],
-                name: record[1],
-                phone: record[2],
-                seats: record[3],
-                nickname: record[4],
-                isHookahNeeded: record[5] ? true : false,
-                isForTwo: record[6] ? true : false,
+                check: record[1],
+                name: record[2],
+                phone: record[3],
+                seats: record[4],
+                nickname: record[5],
+                isHookahNeeded: record[6] ? true : false,
+                isForTwo: record[7] ? true : false,
             };
         });
         result.push({
@@ -73,6 +74,7 @@ export async function getAllSheetsData(spreadsheetId, sheets) {
     return result;
 }
 export async function batchUpdateRowsByMap(spreadsheetId, titlesToRowNumber, newValues) {
+    console.log('newValues', newValues);
     const data = [];
     for (const [sheetTitle, rowNumberInSheet] of titlesToRowNumber.entries()) {
         if (rowNumberInSheet < 0)
@@ -96,28 +98,58 @@ export async function batchUpdateRowsByMap(spreadsheetId, titlesToRowNumber, new
 }
 export async function appendRowToSheets(spreadsheetId, sheetTitles, rowValues) {
     await Promise.all(sheetTitles.map(async ([sheetId, title]) => {
-        const appendResponse = await sheetsClient.spreadsheets.values.append({
+        // Получаем все данные листа в диапазоне A:H
+        const valuesResponse = await sheetsClient.spreadsheets.values.get({
             spreadsheetId,
-            range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`, // или твой BOOKINGS диапазон
+            range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`,
+        });
+        const values = valuesResponse.data.values ?? [];
+        // Ищем последнюю строку, в которой заполнена хотя бы одна ячейка
+        const lastRowIndex = values.reduce((lastIndex, row, index) => row.some((value) => value !== undefined && value !== '')
+            ? index
+            : lastIndex, BOOKINGS_START_ROW - 2);
+        const rowNumber = lastRowIndex + 2;
+        // Вставляем новую физическую строку
+        await sheetsClient.spreadsheets.batchUpdate({
+            spreadsheetId,
+            requestBody: {
+                requests: [
+                    {
+                        insertDimension: {
+                            range: {
+                                sheetId,
+                                dimension: 'ROWS',
+                                startIndex: rowNumber - 1,
+                                endIndex: rowNumber,
+                            },
+                            inheritFromBefore: true,
+                        },
+                    },
+                ],
+            },
+        });
+        // Записываем значения в A:H
+        await sheetsClient.spreadsheets.values.update({
+            spreadsheetId,
+            range: `${escapeSheetTitle(title)}!A${rowNumber}:H${rowNumber}`,
             valueInputOption: 'USER_ENTERED',
-            insertDataOption: 'INSERT_ROWS',
             requestBody: {
                 values: [rowValues],
             },
         });
-        const updatedRange = appendResponse.data.updates?.updatedRange; // "Sheet1!A5:B5"
-        const rowMatch = updatedRange?.match(/![A-Z]+(\d+):/);
-        const rowNumber = rowMatch ? Number(rowMatch[1]) : undefined;
+        // Очищаем форматирование новой строки и устанавливаем checkbox в B
         await sheetsClient.spreadsheets.batchUpdate({
-            spreadsheetId, // ⚠️ обязательно на уровне метода, а не внутри requestBody
+            spreadsheetId,
             requestBody: {
                 requests: [
                     {
                         repeatCell: {
                             range: {
                                 sheetId,
-                                startRowIndex: rowNumber - 1, // 0-based
+                                startRowIndex: rowNumber - 1,
                                 endRowIndex: rowNumber,
+                                startColumnIndex: 0,
+                                endColumnIndex: 8,
                             },
                             cell: {
                                 userEnteredFormat: {
@@ -126,6 +158,24 @@ export async function appendRowToSheets(spreadsheetId, sheetTitles, rowValues) {
                                 },
                             },
                             fields: 'userEnteredFormat(backgroundColor,textFormat)',
+                        },
+                    },
+                    {
+                        setDataValidation: {
+                            range: {
+                                sheetId,
+                                startRowIndex: rowNumber - 1,
+                                endRowIndex: rowNumber,
+                                startColumnIndex: 1,
+                                endColumnIndex: 2,
+                            },
+                            rule: {
+                                condition: {
+                                    type: 'BOOLEAN',
+                                },
+                                showCustomUi: true,
+                                strict: true,
+                            },
                         },
                     },
                 ],
@@ -161,4 +211,29 @@ export async function batchDeleteRowsByMap(spreadsheetId, sheetsData, titlesToRo
         requestBody: { requests },
     });
 }
-// export async function getSheetAllData()
+async function setCheckbox(spreadsheetId, sheetId, rowNumber) {
+    await sheetsClient.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+            requests: [
+                {
+                    setDataValidation: {
+                        range: {
+                            sheetId,
+                            startRowIndex: rowNumber - 1,
+                            endRowIndex: rowNumber,
+                            startColumnIndex: 1,
+                            endColumnIndex: 2,
+                        },
+                        rule: {
+                            condition: {
+                                type: 'BOOLEAN',
+                            },
+                            showCustomUi: true,
+                        },
+                    },
+                },
+            ],
+        },
+    });
+}

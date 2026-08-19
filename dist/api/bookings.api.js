@@ -58,6 +58,7 @@ export async function addNewBooking(spreadsheetId, ctx, state) {
     ]) ?? [];
     const bookingData = [
         new Date().toISOString(),
+        '',
         state.name || '',
         state.phone || '',
         state.places || '',
@@ -71,6 +72,8 @@ export async function addNewBooking(spreadsheetId, ctx, state) {
 export async function updateBookingRows(spreadsheetId, ctx, state) {
     const mappedRows = getMapedRowsBySheetId(state.selectedOptions, state.allTablesData, state.phone);
     const data = [
+        state.name || '',
+        state.phone || '',
         state.places || '',
         ctx.from?.username || 'no_nickname',
         state.hookah === true ? 1 : '',

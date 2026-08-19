@@ -33,14 +33,14 @@ export interface IGridRange {
 }
 
 export enum DataCells {
-  PARTY_NAME = 'I1',
-  AVAILABLE_SEATS = 'R1',
-  AVAILABLE_HOOKAH = 'V1',
-  AVAILABLE_TABLES = 'P1',
-  TABLE_COST = 'N1',
-  SUGGEST_TABLE = 'L1',
-  SUGGEST_HOOKAH = 'T1',
-  BOOKINGS = 'A2:G',
+  PARTY_NAME = 'J1',
+  AVAILABLE_SEATS = 'S1',
+  AVAILABLE_HOOKAH = 'W1',
+  AVAILABLE_TABLES = 'O1',
+  TABLE_COST = 'O1',
+  SUGGEST_TABLE = 'M1',
+  SUGGEST_HOOKAH = 'U1',
+  BOOKINGS = 'A2:H',
 }
 
 export const DATA_RANGE_COUNT = Object.keys(DataCells).length;
