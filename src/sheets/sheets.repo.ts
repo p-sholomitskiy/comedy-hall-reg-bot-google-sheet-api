@@ -153,7 +153,8 @@ export async function appendRowToSheets(
 ) {
   await Promise.all(
     sheetTitles.map(async ([sheetId, title]) => {
-      // Получаем все данные листа в диапазоне A:H
+      // Получаем данные листа, чтобы найти последнюю строку,
+      // в которой заполнена хотя бы одна ячейка.
       const valuesResponse = await sheetsClient.spreadsheets.values.get({
         spreadsheetId,
         range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`,
@@ -161,7 +162,7 @@ export async function appendRowToSheets(
 
       const values = valuesResponse.data.values ?? [];
 
-      // Ищем последнюю строку, в которой заполнена хотя бы одна ячейка
+      // Ищем последнюю строку с данными в любой из колонок A:H.
       const lastRowIndex = values.reduce(
         (lastIndex, row, index) =>
           row.some((value) => value !== undefined && value !== '')
@@ -172,7 +173,8 @@ export async function appendRowToSheets(
 
       const rowNumber = lastRowIndex + 2;
 
-      // Вставляем новую физическую строку
+      // Вставляем новую физическую строку без наследования форматирования
+      // предыдущей строки.
       await sheetsClient.spreadsheets.batchUpdate({
         spreadsheetId,
         requestBody: {
@@ -185,14 +187,13 @@ export async function appendRowToSheets(
                   startIndex: rowNumber - 1,
                   endIndex: rowNumber,
                 },
-                inheritFromBefore: true,
               },
             },
           ],
         },
       });
 
-      // Записываем значения в A:H
+      // Записываем значения новой строки начиная с колонки A.
       await sheetsClient.spreadsheets.values.update({
         spreadsheetId,
         range: `${escapeSheetTitle(title)}!A${rowNumber}:H${rowNumber}`,
@@ -202,7 +203,7 @@ export async function appendRowToSheets(
         },
       });
 
-      // Очищаем форматирование новой строки и устанавливаем checkbox в B
+      // Очищаем форматирование новой строки и устанавливаем checkbox в колонке B.
       await sheetsClient.spreadsheets.batchUpdate({
         spreadsheetId,
         requestBody: {
@@ -217,12 +218,9 @@ export async function appendRowToSheets(
                   endColumnIndex: 8,
                 },
                 cell: {
-                  userEnteredFormat: {
-                    backgroundColor: undefined,
-                    textFormat: undefined,
-                  },
+                  userEnteredFormat: {},
                 },
-                fields: 'userEnteredFormat(backgroundColor,textFormat)',
+                fields: 'userEnteredFormat',
               },
             },
             {
