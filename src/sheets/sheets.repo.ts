@@ -153,47 +153,34 @@ export async function appendRowToSheets(
 ) {
   await Promise.all(
     sheetTitles.map(async ([sheetId, title]) => {
-      // Get existing data to find the last row containing at least one value.
-      // We check all columns because column A can be empty while other columns contain data.
+      // Read only booking data starting from row 2.
+      // Columns I:W are not considered when searching for the last booking row.
       const valuesResponse = await sheetsClient.spreadsheets.values.get({
         spreadsheetId,
-        range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`,
+        range: `${escapeSheetTitle(title)}!${START_APPEND_COL}${BOOKINGS_START_ROW}:${END_COL}`,
       });
 
       const values = valuesResponse.data.values ?? [];
 
       // Find the last row where at least one cell in A:H is not empty.
+      // This works even when column A is empty but B:H contain data.
       const lastRowIndex = values.reduce(
         (lastIndex, row, index) =>
           row.some((value) => value !== undefined && value !== '')
             ? index
             : lastIndex,
-        BOOKINGS_START_ROW - 2,
+        -1,
       );
 
-      // Convert the zero-based array index to the Google Sheets row number.
-      const rowNumber = lastRowIndex + 2;
+      // Calculate the physical row number for the new booking.
+      // If there are no bookings yet, start from row 2.
+      const rowNumber =
+        lastRowIndex === -1
+          ? BOOKINGS_START_ROW
+          : BOOKINGS_START_ROW + lastRowIndex + 1;
 
-      // Insert a new physical row without inheriting formatting from the previous row.
-      await sheetsClient.spreadsheets.batchUpdate({
-        spreadsheetId,
-        requestBody: {
-          requests: [
-            {
-              insertDimension: {
-                range: {
-                  sheetId,
-                  dimension: 'ROWS',
-                  startIndex: rowNumber - 1,
-                  endIndex: rowNumber,
-                },
-              },
-            },
-          ],
-        },
-      });
-
-      // Write the row values starting from column A.
+      // Write the booking only to A:H.
+      // Columns I:W are intentionally not touched.
       await sheetsClient.spreadsheets.values.update({
         spreadsheetId,
         range: `${escapeSheetTitle(title)}!A${rowNumber}:H${rowNumber}`,
@@ -203,12 +190,12 @@ export async function appendRowToSheets(
         },
       });
 
-      // Apply the required formatting to the new row.
+      // Apply formatting only to the new booking row A:H.
       await sheetsClient.spreadsheets.batchUpdate({
         spreadsheetId,
         requestBody: {
           requests: [
-            // Add borders to every cell from A to H.
+            // Add borders to all cells A:H.
             {
               repeatCell: {
                 range: {
@@ -221,18 +208,10 @@ export async function appendRowToSheets(
                 cell: {
                   userEnteredFormat: {
                     borders: {
-                      top: {
-                        style: 'SOLID',
-                      },
-                      bottom: {
-                        style: 'SOLID',
-                      },
-                      left: {
-                        style: 'SOLID',
-                      },
-                      right: {
-                        style: 'SOLID',
-                      },
+                      top: { style: 'SOLID' },
+                      bottom: { style: 'SOLID' },
+                      left: { style: 'SOLID' },
+                      right: { style: 'SOLID' },
                     },
                   },
                 },
@@ -240,7 +219,7 @@ export async function appendRowToSheets(
               },
             },
 
-            // Column A — left-aligned text without wrapping.
+            // A — left-aligned text without wrapping.
             {
               repeatCell: {
                 range: {
@@ -261,7 +240,7 @@ export async function appendRowToSheets(
               },
             },
 
-            // Column B — centered checkbox.
+            // B — centered checkbox.
             {
               repeatCell: {
                 range: {
@@ -298,7 +277,7 @@ export async function appendRowToSheets(
               },
             },
 
-            // Columns C:D — left-aligned text.
+            // C:D — left-aligned text.
             {
               repeatCell: {
                 range: {
@@ -317,7 +296,7 @@ export async function appendRowToSheets(
               },
             },
 
-            // Column E — centered text.
+            // E — centered text.
             {
               repeatCell: {
                 range: {
@@ -336,7 +315,7 @@ export async function appendRowToSheets(
               },
             },
 
-            // Column F — left-aligned text.
+            // F — left-aligned text.
             {
               repeatCell: {
                 range: {
@@ -355,7 +334,7 @@ export async function appendRowToSheets(
               },
             },
 
-            // Columns G:H — centered text.
+            // G:H — centered text.
             {
               repeatCell: {
                 range: {

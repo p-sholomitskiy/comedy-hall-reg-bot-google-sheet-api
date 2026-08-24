@@ -98,37 +98,25 @@ export async function batchUpdateRowsByMap(spreadsheetId, titlesToRowNumber, new
 }
 export async function appendRowToSheets(spreadsheetId, sheetTitles, rowValues) {
     await Promise.all(sheetTitles.map(async ([sheetId, title]) => {
-        // Получаем все данные листа в диапазоне A:H
+        // Read only booking data starting from row 2.
+        // Columns I:W are not considered when searching for the last booking row.
         const valuesResponse = await sheetsClient.spreadsheets.values.get({
             spreadsheetId,
-            range: `${escapeSheetTitle(title)}!${START_APPEND_COL}:${END_COL}`,
+            range: `${escapeSheetTitle(title)}!${START_APPEND_COL}${BOOKINGS_START_ROW}:${END_COL}`,
         });
         const values = valuesResponse.data.values ?? [];
-        // Ищем последнюю строку, в которой заполнена хотя бы одна ячейка
+        // Find the last row where at least one cell in A:H is not empty.
+        // This works even when column A is empty but B:H contain data.
         const lastRowIndex = values.reduce((lastIndex, row, index) => row.some((value) => value !== undefined && value !== '')
             ? index
-            : lastIndex, BOOKINGS_START_ROW - 2);
-        const rowNumber = lastRowIndex + 2;
-        // Вставляем новую физическую строку
-        await sheetsClient.spreadsheets.batchUpdate({
-            spreadsheetId,
-            requestBody: {
-                requests: [
-                    {
-                        insertDimension: {
-                            range: {
-                                sheetId,
-                                dimension: 'ROWS',
-                                startIndex: rowNumber - 1,
-                                endIndex: rowNumber,
-                            },
-                            inheritFromBefore: true,
-                        },
-                    },
-                ],
-            },
-        });
-        // Записываем значения в A:H
+            : lastIndex, -1);
+        // Calculate the physical row number for the new booking.
+        // If there are no bookings yet, start from row 2.
+        const rowNumber = lastRowIndex === -1
+            ? BOOKINGS_START_ROW
+            : BOOKINGS_START_ROW + lastRowIndex + 1;
+        // Write the booking only to A:H.
+        // Columns I:W are intentionally not touched.
         await sheetsClient.spreadsheets.values.update({
             spreadsheetId,
             range: `${escapeSheetTitle(title)}!A${rowNumber}:H${rowNumber}`,
@@ -137,11 +125,12 @@ export async function appendRowToSheets(spreadsheetId, sheetTitles, rowValues) {
                 values: [rowValues],
             },
         });
-        // Очищаем форматирование новой строки и устанавливаем checkbox в B
+        // Apply formatting only to the new booking row A:H.
         await sheetsClient.spreadsheets.batchUpdate({
             spreadsheetId,
             requestBody: {
                 requests: [
+                    // Add borders to all cells A:H.
                     {
                         repeatCell: {
                             range: {
@@ -153,11 +142,52 @@ export async function appendRowToSheets(spreadsheetId, sheetTitles, rowValues) {
                             },
                             cell: {
                                 userEnteredFormat: {
-                                    backgroundColor: undefined,
-                                    textFormat: undefined,
+                                    borders: {
+                                        top: { style: 'SOLID' },
+                                        bottom: { style: 'SOLID' },
+                                        left: { style: 'SOLID' },
+                                        right: { style: 'SOLID' },
+                                    },
                                 },
                             },
-                            fields: 'userEnteredFormat(backgroundColor,textFormat)',
+                            fields: 'userEnteredFormat.borders',
+                        },
+                    },
+                    // A — left-aligned text without wrapping.
+                    {
+                        repeatCell: {
+                            range: {
+                                sheetId,
+                                startRowIndex: rowNumber - 1,
+                                endRowIndex: rowNumber,
+                                startColumnIndex: 0,
+                                endColumnIndex: 1,
+                            },
+                            cell: {
+                                userEnteredFormat: {
+                                    horizontalAlignment: 'LEFT',
+                                    wrapStrategy: 'CLIP',
+                                },
+                            },
+                            fields: 'userEnteredFormat.horizontalAlignment,userEnteredFormat.wrapStrategy',
+                        },
+                    },
+                    // B — centered checkbox.
+                    {
+                        repeatCell: {
+                            range: {
+                                sheetId,
+                                startRowIndex: rowNumber - 1,
+                                endRowIndex: rowNumber,
+                                startColumnIndex: 1,
+                                endColumnIndex: 2,
+                            },
+                            cell: {
+                                userEnteredFormat: {
+                                    horizontalAlignment: 'CENTER',
+                                },
+                            },
+                            fields: 'userEnteredFormat.horizontalAlignment',
                         },
                     },
                     {
@@ -176,6 +206,78 @@ export async function appendRowToSheets(spreadsheetId, sheetTitles, rowValues) {
                                 showCustomUi: true,
                                 strict: true,
                             },
+                        },
+                    },
+                    // C:D — left-aligned text.
+                    {
+                        repeatCell: {
+                            range: {
+                                sheetId,
+                                startRowIndex: rowNumber - 1,
+                                endRowIndex: rowNumber,
+                                startColumnIndex: 2,
+                                endColumnIndex: 4,
+                            },
+                            cell: {
+                                userEnteredFormat: {
+                                    horizontalAlignment: 'LEFT',
+                                },
+                            },
+                            fields: 'userEnteredFormat.horizontalAlignment',
+                        },
+                    },
+                    // E — centered text.
+                    {
+                        repeatCell: {
+                            range: {
+                                sheetId,
+                                startRowIndex: rowNumber - 1,
+                                endRowIndex: rowNumber,
+                                startColumnIndex: 4,
+                                endColumnIndex: 5,
+                            },
+                            cell: {
+                                userEnteredFormat: {
+                                    horizontalAlignment: 'CENTER',
+                                },
+                            },
+                            fields: 'userEnteredFormat.horizontalAlignment',
+                        },
+                    },
+                    // F — left-aligned text.
+                    {
+                        repeatCell: {
+                            range: {
+                                sheetId,
+                                startRowIndex: rowNumber - 1,
+                                endRowIndex: rowNumber,
+                                startColumnIndex: 5,
+                                endColumnIndex: 6,
+                            },
+                            cell: {
+                                userEnteredFormat: {
+                                    horizontalAlignment: 'LEFT',
+                                },
+                            },
+                            fields: 'userEnteredFormat.horizontalAlignment',
+                        },
+                    },
+                    // G:H — centered text.
+                    {
+                        repeatCell: {
+                            range: {
+                                sheetId,
+                                startRowIndex: rowNumber - 1,
+                                endRowIndex: rowNumber,
+                                startColumnIndex: 6,
+                                endColumnIndex: 8,
+                            },
+                            cell: {
+                                userEnteredFormat: {
+                                    horizontalAlignment: 'CENTER',
+                                },
+                            },
+                            fields: 'userEnteredFormat.horizontalAlignment',
                         },
                     },
                 ],
