@@ -320,6 +320,7 @@ bot.on('text', async (ctx) => {
           const canSuggestTable = state.selectedOptions?.every((sheetId) => {
             const option = state.optionsForSelect?.get(sheetId);
             tableCost = option?.tableCost;
+
             return option && option.suggestTable && option.tables > 0;
           });
           if (canSuggestTable) {
@@ -398,6 +399,7 @@ bot.on('text', async (ctx) => {
         const canSuggestTable = state.selectedOptions?.every((sheetId) => {
           const option = state.optionsForSelect?.get(sheetId);
           tableCost = option?.tableCost;
+
           return option && option.suggestTable && option.tables > 0;
         });
         if (canSuggestTable) {
