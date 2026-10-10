@@ -358,11 +358,35 @@ bot.on('text', async (ctx) => {
         // Если кальян недоступен, устанавливаем hookah = false и отправляем обновление
         state.hookah = false;
         try {
+          const { updatedSheets, notFoundSheets } =
           await updateBookingRows(SPREADSHEET_ID, ctx, state);
-          ctx.reply(getRandomMessage(bookingUpdatedResponses));
+
+          const messages: string[] = [];
+
+          if (updatedSheets.length > 0) {
+            messages.push(getRandomMessage(bookingUpdatedResponses));
+          }
+
+          if (notFoundSheets.length > 0) {
+            const titles = notFoundSheets
+              .map((sheet) => sheet.partyName || sheet.sheetName)
+              .join(', ');
+
+            messages.push(
+              `Бронь уже отсутствует на следующих мероприятиях: ${titles}.`,
+            );
+          }
+
+          if (messages.length === 0) {
+            messages.push('Не удалось определить выбранные мероприятия. Начните заново.');
+          }
+
+          await ctx.reply(messages.join('\n\n'));
+
           ctx.session = {};
         } catch (error) {
           console.log(error);
+          throw error;
         }
         return;
       }
@@ -483,8 +507,31 @@ bot.action(/hookah_(yes|no)/, async (ctx) => {
   // Продолжаем процесс бронирования или обновления
   try {
     if (state.action === 'edit') {
+      const { updatedSheets, notFoundSheets } =
       await updateBookingRows(SPREADSHEET_ID, ctx, state);
-      ctx.reply(getRandomMessage(bookingUpdatedResponses));
+
+      const messages: string[] = [];
+
+      if (updatedSheets.length > 0) {
+        messages.push(getRandomMessage(bookingUpdatedResponses));
+      }
+
+      if (notFoundSheets.length > 0) {
+        const titles = notFoundSheets
+          .map((sheet) => sheet.partyName || sheet.sheetName)
+          .join(', ');
+
+        messages.push(
+          `Бронь уже отсутствует на следующих мероприятиях: ${titles}.`,
+        );
+      }
+
+      if (messages.length === 0) {
+        messages.push('Не удалось определить выбранные мероприятия. Начните заново.');
+      }
+
+      await ctx.reply(messages.join('\n\n'));
+
       ctx.session = {};
     } else {
       await addNewBooking(SPREADSHEET_ID, ctx, state);
@@ -503,6 +550,7 @@ bot.action(/hookah_(yes|no)/, async (ctx) => {
     }
   } catch (error) {
     console.log(error);
+    throw error;
   }
 });
 
@@ -550,8 +598,31 @@ bot.action(/table_(yes|no)/, async (ctx) => {
 
   try {
     if (state.action === 'edit') {
+      const { updatedSheets, notFoundSheets } =
       await updateBookingRows(SPREADSHEET_ID, ctx, state);
-      ctx.reply(getRandomMessage(bookingUpdatedResponses));
+
+      const messages: string[] = [];
+
+      if (updatedSheets.length > 0) {
+        messages.push(getRandomMessage(bookingUpdatedResponses));
+      }
+
+      if (notFoundSheets.length > 0) {
+        const titles = notFoundSheets
+          .map((sheet) => sheet.partyName || sheet.sheetName)
+          .join(', ');
+
+        messages.push(
+          `Бронь уже отсутствует на следующих мероприятиях: ${titles}.`,
+        );
+      }
+
+      if (messages.length === 0) {
+        messages.push('Не удалось определить выбранные мероприятия. Начните заново.');
+      }
+
+      await ctx.reply(messages.join('\n\n'));
+
       ctx.session = {};
     } else {
       await addNewBooking(SPREADSHEET_ID, ctx, state);
@@ -570,6 +641,7 @@ bot.action(/table_(yes|no)/, async (ctx) => {
     }
   } catch (error) {
     console.log(error);
+    throw error;
   }
 });
 bot.action(/^select_(\d+)$/, async (ctx) => {
@@ -606,9 +678,33 @@ bot.action('finish_selection', async (ctx) => {
   }
 
   if (state.action === 'delete') {
-    await deleteBookingRow(SPREADSHEET_ID, ctx, state);
-    await ctx.editMessageText(getRandomMessage(bookingDeletedResponses));
+    const { sheetListWithDeletingPhone, sheetListWithoutDeletingPhone } = await deleteBookingRow(
+      SPREADSHEET_ID, ctx, state
+    )
+
+    const messages: string[] = [];
+
+    if (sheetListWithDeletingPhone.length > 0) {
+      messages.push(getRandomMessage(bookingDeletedResponses))
+    }
+
+    if (sheetListWithoutDeletingPhone.length > 0) {
+      const titles = sheetListWithoutDeletingPhone.map(
+        ((sheet) => sheet.partyName || sheet.sheetName)
+      ).join(', ')
+      
+      messages.push(
+        `Бронь уже отсутствует на следующих мероприятиях: ${titles}.`,
+      );
+    }
+
+    if (messages.length === 0) {
+      messages.push('Не удалось определить выбранные мероприятия. Начните заново.')
+    }
+
+    await ctx.editMessageText(messages.join(`\n\n`))
     ctx.session = {};
+
     return;
   }
 
