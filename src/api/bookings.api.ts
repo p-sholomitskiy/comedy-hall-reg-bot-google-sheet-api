@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { MyContext, UserSession } from '../bot/bot.types.js';
 import { BOOKINGS_START_ROW } from '../sheets/sheets.constants.js';
 import {
@@ -7,6 +8,7 @@ import {
   getBookingRowsByPhone,
 } from '../sheets/sheets.repo.js';
 import { ISheetData } from '../sheets/sheets.types.js';
+import { createLogEventRecord } from '../utils/logger.util.js';
 
 export function findRowsByPhone(phone: string, allSheets: ISheetData[]) {
   const mappedTitelWithRows = new Map<string, number>();
@@ -81,21 +83,71 @@ export async function addNewBooking(
       state.allTablesData?.find((sheet) => sheet.sheetId === sheetId)
         ?.sheetName ?? '',
     ]) ?? [];
-  const bookingData = [
-    new Date().toISOString(),
+  const bookingData = {
+    timestamp: new Date().toISOString(),
+    name: state.name || '',
+    phone: state.phone || '',
+    places: state.places || '',
+    nickname: ctx.from?.username || 'no_nickname',
+    hookah: state.hookah === true,
+    tableForTwo: state.isTableForTwo === true,
+  };
+
+  const rowValues = [
+    bookingData.timestamp,
     '',
-    state.name || '',
-    state.phone || '',
-    state.places || '',
-    ctx.from?.username || 'no_nickname',
-    state.hookah === true ? 1 : '',
-    state.isTableForTwo === true ? 1 : '',
+    bookingData.name,
+    bookingData.phone,
+    bookingData.places,
+    bookingData.nickname,
+    bookingData.hookah ? 1 : '',
+    bookingData.tableForTwo ? 1 : '',
   ];
 
-  console.log(
-    `new booking: ${bookingData.join(' | ')} in ${titlesForBooking.join(' | ')}`,
-  );
-  await appendRowToSheets(spreadsheetId, titlesForBooking, bookingData);
+  const logFields = {
+    operationId: randomUUID(),
+    name: bookingData.name,
+    phone: bookingData.phone,
+    places: bookingData.places,
+    nickname: bookingData.nickname,
+    hookah: bookingData.hookah,
+    tableForTwo: bookingData.tableForTwo,
+    selectedCount: titlesForBooking.length,
+    selectedSheetNames: titlesForBooking
+      .map(([, title]) => title)
+      .join(', '),
+  };
+
+  createLogEventRecord({
+    event: 'booking.add.requested',
+    fields: logFields,
+    level: 'info',
+  });
+
+  try {
+    await appendRowToSheets(
+      spreadsheetId,
+      titlesForBooking,
+      rowValues,
+    );
+
+    createLogEventRecord({
+      event: 'booking.add.success',
+      fields: logFields,
+      level: 'info',
+    });
+  } catch (error) {
+    createLogEventRecord({
+      event: 'booking.add.failed',
+      fields: {
+        ...logFields,
+        errorType: error instanceof Error ? error.name : 'UnknownError',
+      },
+      level: 'error',
+    });
+
+    throw error;
+  }
 }
 
 export async function updateBookingRows(
@@ -103,7 +155,7 @@ export async function updateBookingRows(
   ctx: MyContext,
   state: UserSession,
 ) {
-    if (!state.phone) {
+  if (!state.phone) {
     throw new Error('Не указан телефон для изменения бронирования');
   }
 
@@ -111,50 +163,98 @@ export async function updateBookingRows(
     (sheet) => state.selectedOptions?.includes(sheet.sheetId),
   );
 
-  const mappedRows = await getBookingRowsByPhone(
-    spreadsheetId,
-    selectedSheets,
-    state.phone,
-  );
-  const data = [
-    state.name || '',
-    state.phone || '',
-    state.places || '',
-    ctx.from?.username || 'no_nickname',
-    state.hookah === true ? 1 : '',
-    state.isTableForTwo === true ? 1 : '',
+  const bookingData = {
+    name: state.name || '',
+    phone: state.phone,
+    places: state.places || '',
+    nickname: ctx.from?.username || 'no_nickname',
+    hookah: state.hookah === true,
+    tableForTwo: state.isTableForTwo === true,
+  };
+  const rowValues = [
+    bookingData.name,
+    bookingData.phone,
+    bookingData.places,
+    bookingData.nickname,
+    bookingData.hookah ? 1 : '',
+    bookingData.tableForTwo ? 1 : '',
   ];
+  const logFields = {
+    operationId: randomUUID(),
+    ...bookingData,
+    selectedCount: selectedSheets.length,
+    selectedSheetNames: selectedSheets
+      .map((sheet) => sheet.sheetName)
+      .join(', '),
+  };
 
-  const createLogRecord = () => {
-    let record = '';
-    for (const [key, value] of mappedRows) {
-      record = record + `${key} row ${value} | `;
+  createLogEventRecord({
+    event: 'booking.update.requested',
+    fields: logFields,
+    level: 'info',
+  });
+
+  try {
+    const mappedRows = await getBookingRowsByPhone(
+      spreadsheetId,
+      selectedSheets,
+      bookingData.phone,
+    );
+    const sheetsWithBooking = selectedSheets.filter(
+      (sheet) =>
+        (mappedRows.get(sheet.sheetName) ?? -1) >= BOOKINGS_START_ROW,
+    );
+    const sheetsWithoutBooking = selectedSheets.filter(
+      (sheet) =>
+        (mappedRows.get(sheet.sheetName) ?? -1) < BOOKINGS_START_ROW,
+    );
+
+    if (sheetsWithBooking.length > 0) {
+      await batchUpdateRowsByMap(spreadsheetId, mappedRows, rowValues);
+
+      createLogEventRecord({
+        event: 'booking.update.success',
+        fields: {
+          ...logFields,
+          updatedCount: sheetsWithBooking.length,
+          searchedRows: Array.from(mappedRows)
+            .map(([title, row]) => `${title} row ${row}`)
+            .join(' | '),
+        },
+        level: 'info',
+      });
     }
-    return record;
-  };
 
-  console.log(
-    `new update booking: ${[state.name, state.phone, ...data].join(' | ')} in ${createLogRecord()}`,
-  );
+    if (sheetsWithoutBooking.length > 0) {
+      createLogEventRecord({
+        event: 'booking.update.not_found',
+        fields: {
+          ...logFields,
+          notFoundCount: sheetsWithoutBooking.length,
+          notFoundSheetNames: sheetsWithoutBooking
+            .map((sheet) => sheet.sheetName)
+            .join(', '),
+        },
+        level: 'info',
+      });
+    }
 
-  const sheetsWithBooking = selectedSheets.filter(
-    (sheet) =>
-      (mappedRows.get(sheet.sheetName) ?? -1) >= BOOKINGS_START_ROW,
-  );
+    return {
+      updatedSheets: sheetsWithBooking,
+      notFoundSheets: sheetsWithoutBooking,
+    };
+  } catch (error) {
+    createLogEventRecord({
+      event: 'booking.update.failed',
+      fields: {
+        ...logFields,
+        errorType: error instanceof Error ? error.name : 'UnknownError',
+      },
+      level: 'error',
+    });
 
-  const sheetsWithoutBooking = selectedSheets.filter(
-    (sheet) =>
-      (mappedRows.get(sheet.sheetName) ?? -1) < BOOKINGS_START_ROW,
-  );
-
-  if (sheetsWithBooking.length > 0) {
-    await batchUpdateRowsByMap(spreadsheetId, mappedRows, data);
+    throw error;
   }
-
-  return {
-    updatedSheets: sheetsWithBooking,
-    notFoundSheets: sheetsWithoutBooking,
-  };
 }
 
 export async function deleteBookingRow(
@@ -162,6 +262,8 @@ export async function deleteBookingRow(
   ctx: MyContext,
   state: UserSession,
 ) {
+  const operationId = randomUUID();
+
   const selectedSheets = state.allTablesData!.filter(
     (sheet) => state.selectedOptions?.includes(sheet.sheetId)
   )
@@ -170,37 +272,87 @@ export async function deleteBookingRow(
     throw new Error('Не указан телефон для отмены бронирования');
   }
 
-  const mappedRowsByPhone = await getBookingRowsByPhone(
-    spreadsheetId,
-    selectedSheets,
-    state.phone
-  )
-
-  const createLogRecord = () => {
-    let record = '';
-    for (const [key, value] of mappedRowsByPhone) {
-      record = record + `${key} row ${value} | `;
-    }
-    return record;
+  const logFields = {
+    operationId,
+    phone: state.phone,
+    selectedCount: selectedSheets.length,
+    selectedSheetNames: selectedSheets
+      .map((sheet) => sheet.sheetName)
+      .join(', '),
   };
 
-  console.log(
-    `delete booking: ${[state.name, state.phone].join(' | ')} in ${createLogRecord()} `,
-  );
+  createLogEventRecord({
+    event: 'booking.cancel.requested',
+    fields: logFields,
+    level: 'info'
+  })
 
-  const sheetListWithDeletingPhone = selectedSheets.filter(
-    (sheet) => (mappedRowsByPhone.get(sheet.sheetName) ?? -1) >= BOOKINGS_START_ROW
-  );
-  const sheetListWithoutDeletingPhone = selectedSheets.filter(
-    (sheet) => (mappedRowsByPhone.get(sheet.sheetName) ?? -1) < BOOKINGS_START_ROW
-  );
-  if (sheetListWithDeletingPhone.length > 0) {
-    await batchDeleteRowsByMap(
+  try {
+
+    const mappedRowsByPhone = await getBookingRowsByPhone(
       spreadsheetId,
-      sheetListWithDeletingPhone,
-      mappedRowsByPhone
+      selectedSheets,
+      state.phone
     )
+
+    const createLogRecord = () => {
+      let record = '';
+      for (const [key, value] of mappedRowsByPhone) {
+        record = record + `${key} row ${value} | `;
+      }
+      return record;
+    };
+
+    const sheetListWithDeletingPhone = selectedSheets.filter(
+      (sheet) => (mappedRowsByPhone.get(sheet.sheetName) ?? -1) >= BOOKINGS_START_ROW
+    );
+    const sheetListWithoutDeletingPhone = selectedSheets.filter(
+      (sheet) => (mappedRowsByPhone.get(sheet.sheetName) ?? -1) < BOOKINGS_START_ROW
+    );
+    if (sheetListWithDeletingPhone.length > 0) {
+      await batchDeleteRowsByMap(
+        spreadsheetId,
+        sheetListWithDeletingPhone,
+        mappedRowsByPhone
+      )
+
+      createLogEventRecord({
+        event: 'booking.cancel.success',
+        fields: {
+          ...logFields,
+          deletedCount: sheetListWithDeletingPhone.length,
+          searchedRows: createLogRecord(),
+        },
+        level: 'info',
+      });
+    }
+
+    if (sheetListWithoutDeletingPhone.length > 0) {
+      createLogEventRecord({
+        event: 'booking.cancel.not_found',
+        fields: {
+          ...logFields,
+          notFoundCount: sheetListWithoutDeletingPhone.length,
+          notFoundSheetNames: sheetListWithoutDeletingPhone
+            .map((sheet) => sheet.sheetName)
+            .join(', '),
+        },
+        level: 'info',
+      });
+    }
+
+    return { sheetListWithDeletingPhone, sheetListWithoutDeletingPhone };
+
+  } catch (error) {
+    createLogEventRecord({
+      event: 'booking.cancel.failed',
+      fields: {
+        ...logFields,
+        errorType: error instanceof Error ? error.name : 'UnknownError',
+      },
+      level: 'error',
+    });
+
+    throw error;
   }
-  
-  return { sheetListWithDeletingPhone, sheetListWithoutDeletingPhone };
 }
