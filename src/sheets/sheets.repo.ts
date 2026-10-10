@@ -429,3 +429,37 @@ async function setCheckbox(
     },
   });
 }
+
+export const getBookingRowsByPhone = async (
+  spreadsheetId: string,
+  sheets: SheetInfo[],
+  phone: string
+): Promise<Map<string, number>> => {
+  const bookingsRowsByPhoneMap = new Map<string, number>();
+
+
+  if (sheets.length === 0) {
+    return bookingsRowsByPhoneMap; 
+  }
+
+  const response = await sheetsClient.spreadsheets.values.batchGet({
+    spreadsheetId,
+    ranges: sheets.map(
+      ({sheetName}) => `${escapeSheetTitle(sheetName)}!D${BOOKINGS_START_ROW}:D`
+    )
+  });
+
+  const valuesRanges = response.data.valueRanges ?? [];
+
+  sheets.forEach(({sheetName}, sheetIndex) => {
+    const rows = valuesRanges[sheetIndex]?.values ?? [];
+    const rowIndexByPhone = rows.findIndex((row) => row[0] === phone);
+
+    bookingsRowsByPhoneMap.set(
+      sheetName,
+      rowIndexByPhone === -1 ? -1 : rowIndexByPhone + BOOKINGS_START_ROW
+    );
+  });
+
+  return bookingsRowsByPhoneMap;
+}

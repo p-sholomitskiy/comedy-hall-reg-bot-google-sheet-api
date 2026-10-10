@@ -4,6 +4,7 @@ import {
   appendRowToSheets,
   batchDeleteRowsByMap,
   batchUpdateRowsByMap,
+  getBookingRowsByPhone,
 } from '../sheets/sheets.repo.js';
 import { ISheetData } from '../sheets/sheets.types.js';
 
@@ -102,10 +103,18 @@ export async function updateBookingRows(
   ctx: MyContext,
   state: UserSession,
 ) {
-  const mappedRows = getMapedRowsBySheetId(
-    state.selectedOptions!,
-    state.allTablesData!,
-    state.phone!,
+    if (!state.phone) {
+    throw new Error('Не указан телефон для изменения бронирования');
+  }
+
+  const selectedSheets = state.allTablesData!.filter(
+    (sheet) => state.selectedOptions?.includes(sheet.sheetId),
+  );
+
+  const mappedRows = await getBookingRowsByPhone(
+    spreadsheetId,
+    selectedSheets,
+    state.phone,
   );
   const data = [
     state.name || '',
@@ -128,7 +137,24 @@ export async function updateBookingRows(
     `new update booking: ${[state.name, state.phone, ...data].join(' | ')} in ${createLogRecord()}`,
   );
 
-  await batchUpdateRowsByMap(spreadsheetId, mappedRows, data);
+  const sheetsWithBooking = selectedSheets.filter(
+    (sheet) =>
+      (mappedRows.get(sheet.sheetName) ?? -1) >= BOOKINGS_START_ROW,
+  );
+
+  const sheetsWithoutBooking = selectedSheets.filter(
+    (sheet) =>
+      (mappedRows.get(sheet.sheetName) ?? -1) < BOOKINGS_START_ROW,
+  );
+
+  if (sheetsWithBooking.length > 0) {
+    await batchUpdateRowsByMap(spreadsheetId, mappedRows, data);
+  }
+
+  return {
+    updatedSheets: sheetsWithBooking,
+    notFoundSheets: sheetsWithoutBooking,
+  };
 }
 
 export async function deleteBookingRow(
@@ -136,15 +162,23 @@ export async function deleteBookingRow(
   ctx: MyContext,
   state: UserSession,
 ) {
-  const mappedRows = getMapedRowsBySheetId(
-    state.selectedOptions!,
-    state.allTablesData!,
-    state.phone!,
-  );
+  const selectedSheets = state.allTablesData!.filter(
+    (sheet) => state.selectedOptions?.includes(sheet.sheetId)
+  )
+
+  if (!state.phone) {
+    throw new Error('Не указан телефон для отмены бронирования');
+  }
+
+  const mappedRowsByPhone = await getBookingRowsByPhone(
+    spreadsheetId,
+    selectedSheets,
+    state.phone
+  )
 
   const createLogRecord = () => {
     let record = '';
-    for (const [key, value] of mappedRows) {
+    for (const [key, value] of mappedRowsByPhone) {
       record = record + `${key} row ${value} | `;
     }
     return record;
@@ -153,5 +187,20 @@ export async function deleteBookingRow(
   console.log(
     `delete booking: ${[state.name, state.phone].join(' | ')} in ${createLogRecord()} `,
   );
-  batchDeleteRowsByMap(spreadsheetId, state.allTablesData!, mappedRows);
+
+  const sheetListWithDeletingPhone = selectedSheets.filter(
+    (sheet) => (mappedRowsByPhone.get(sheet.sheetName) ?? -1) >= BOOKINGS_START_ROW
+  );
+  const sheetListWithoutDeletingPhone = selectedSheets.filter(
+    (sheet) => (mappedRowsByPhone.get(sheet.sheetName) ?? -1) < BOOKINGS_START_ROW
+  );
+  if (sheetListWithDeletingPhone.length > 0) {
+    await batchDeleteRowsByMap(
+      spreadsheetId,
+      sheetListWithDeletingPhone,
+      mappedRowsByPhone
+    )
+  }
+  
+  return { sheetListWithDeletingPhone, sheetListWithoutDeletingPhone };
 }
