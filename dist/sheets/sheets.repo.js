@@ -74,7 +74,6 @@ export async function getAllSheetsData(spreadsheetId, sheets) {
     return result;
 }
 export async function batchUpdateRowsByMap(spreadsheetId, titlesToRowNumber, newValues) {
-    console.log('newValues', newValues);
     const data = [];
     for (const [sheetTitle, rowNumberInSheet] of titlesToRowNumber.entries()) {
         if (rowNumberInSheet < 0)

@@ -35,7 +35,6 @@ import {
   getAllSheetsData,
 } from '../sheets/sheets.repo.js';
 import { IBookingRow, ISheetData } from '../sheets/sheets.types.js';
-import { stat } from 'fs';
 
 //helpers
 // === Inline клавиатура с галочками ===
@@ -359,7 +358,7 @@ bot.on('text', async (ctx) => {
         state.hookah = false;
         try {
           const { updatedSheets, notFoundSheets } =
-          await updateBookingRows(SPREADSHEET_ID, ctx, state);
+            await updateBookingRows(SPREADSHEET_ID, ctx, state);
 
           const messages: string[] = [];
 
@@ -508,7 +507,7 @@ bot.action(/hookah_(yes|no)/, async (ctx) => {
   try {
     if (state.action === 'edit') {
       const { updatedSheets, notFoundSheets } =
-      await updateBookingRows(SPREADSHEET_ID, ctx, state);
+        await updateBookingRows(SPREADSHEET_ID, ctx, state);
 
       const messages: string[] = [];
 
@@ -599,7 +598,7 @@ bot.action(/table_(yes|no)/, async (ctx) => {
   try {
     if (state.action === 'edit') {
       const { updatedSheets, notFoundSheets } =
-      await updateBookingRows(SPREADSHEET_ID, ctx, state);
+        await updateBookingRows(SPREADSHEET_ID, ctx, state);
 
       const messages: string[] = [];
 
@@ -692,7 +691,7 @@ bot.action('finish_selection', async (ctx) => {
       const titles = sheetListWithoutDeletingPhone.map(
         ((sheet) => sheet.partyName || sheet.sheetName)
       ).join(', ')
-      
+
       messages.push(
         `Бронь уже отсутствует на следующих мероприятиях: ${titles}.`,
       );

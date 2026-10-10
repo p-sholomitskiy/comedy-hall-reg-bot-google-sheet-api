@@ -120,7 +120,6 @@ export async function batchUpdateRowsByMap(
   titlesToRowNumber: Map<string, number>,
   newValues: (string | number | null)[],
 ) {
-  console.log('newValues', newValues)
   const data: sheets_v4.Schema$ValueRange[] = [];
 
   for (const [sheetTitle, rowNumberInSheet] of titlesToRowNumber.entries()) {
