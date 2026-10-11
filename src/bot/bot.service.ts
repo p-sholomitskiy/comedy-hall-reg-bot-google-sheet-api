@@ -1,5 +1,6 @@
 import 'dotenv/config';
-import { MyContext, SheetOption } from './bot.types.js';
+import { createLogEventRecord } from '../utils/logger.util.js';
+import { MyContext, SheetOption, UserSession } from './bot.types.js';
 import { Telegraf, Context, Markup, session } from 'telegraf';
 import {
   bookingDeletedResponses,
@@ -33,6 +34,7 @@ import {
 import {
   getSheetsProperties,
   getAllSheetsData,
+  getCurrentBookingsByPhone,
 } from '../sheets/sheets.repo.js';
 import { IBookingRow, ISheetData } from '../sheets/sheets.types.js';
 
@@ -53,6 +55,45 @@ function createInlineKeyboard(
   ]);
 
   return { reply_markup: { inline_keyboard: inlineKeyboard } };
+}
+
+async function createCurrentBookingsMessage(state: UserSession): Promise<string> {
+  try {
+    if (!state.phone || !state.allTablesData) {
+      throw new Error('Missing booking context');
+    }
+    const bookings = await getCurrentBookingsByPhone(
+      SPREADSHEET_ID,
+      state.allTablesData,
+      state.phone,
+    );
+    if (bookings.length === 0) return 'У вас нет актуальных бронирований.';
+
+    const entries = bookings.map((booking) => {
+      const places = booking.places;
+      const word = places % 10 === 1 && places % 100 !== 11
+        ? 'место'
+        : places % 10 >= 2 && places % 10 <= 4
+          && (places % 100 < 12 || places % 100 > 14) ? 'места' : 'мест';
+      return `• ${booking.title} — ${places} ${word}\n  Кальян: ${booking.hookah ? 'да' : 'нет'}\n  Столик на двоих: ${booking.tableForTwo ? 'да' : 'нет'}`;
+    });
+    return `Ваши актуальные брони:\n${entries.join('\n\n')}`;
+  } catch (error) {
+    createLogEventRecord({
+      event: 'booking.summary.failed',
+      fields: { errorType: error instanceof Error ? error.name : 'UnknownError' },
+      level: 'warn',
+    });
+    return 'Не удалось загрузить актуальный список бронирований. Нажмите «Проверить бронь».';
+  }
+}
+
+async function createBookingSuccessMessage(state: UserSession): Promise<string> {
+  return [
+    getRandomMessage(bookingSuccessMessages),
+    await createCurrentBookingsMessage(state),
+    finalSuccessMessage,
+  ].join('\n\n');
 }
 
 // --- Конфигурация
@@ -380,6 +421,7 @@ bot.on('text', async (ctx) => {
             messages.push('Не удалось определить выбранные мероприятия. Начните заново.');
           }
 
+          messages.push(await createCurrentBookingsMessage(state));
           await ctx.reply(messages.join('\n\n'));
 
           ctx.session = {};
@@ -465,9 +507,7 @@ bot.on('text', async (ctx) => {
           'CAACAgIAAxkBAAIJ_mdEY7JQtx_hqkGl5023DkZ9pWdYAAIMYgACuyMYShJp1N-PPHrRNgQ',
         );
         ctx.reply(
-          `${getRandomMessage(
-            bookingSuccessMessages,
-          )}\n\n${finalSuccessMessage}`,
+          await createBookingSuccessMessage(state),
           mainMenu,
         );
         ctx.replyWithDocument({
@@ -529,6 +569,7 @@ bot.action(/hookah_(yes|no)/, async (ctx) => {
         messages.push('Не удалось определить выбранные мероприятия. Начните заново.');
       }
 
+      messages.push(await createCurrentBookingsMessage(state));
       await ctx.reply(messages.join('\n\n'));
 
       ctx.session = {};
@@ -538,7 +579,7 @@ bot.action(/hookah_(yes|no)/, async (ctx) => {
         'CAACAgIAAxkBAAIJ_mdEY7JQtx_hqkGl5023DkZ9pWdYAAIMYgACuyMYShJp1N-PPHrRNgQ',
       );
       ctx.reply(
-        `${getRandomMessage(bookingSuccessMessages)}\n\n${finalSuccessMessage}`,
+        await createBookingSuccessMessage(state),
         mainMenu,
       );
       ctx.replyWithDocument({
@@ -620,6 +661,7 @@ bot.action(/table_(yes|no)/, async (ctx) => {
         messages.push('Не удалось определить выбранные мероприятия. Начните заново.');
       }
 
+      messages.push(await createCurrentBookingsMessage(state));
       await ctx.reply(messages.join('\n\n'));
 
       ctx.session = {};
@@ -629,7 +671,7 @@ bot.action(/table_(yes|no)/, async (ctx) => {
         'CAACAgIAAxkBAAIJ_mdEY7JQtx_hqkGl5023DkZ9pWdYAAIMYgACuyMYShJp1N-PPHrRNgQ',
       );
       ctx.reply(
-        `${getRandomMessage(bookingSuccessMessages)}\n\n${finalSuccessMessage}`,
+        await createBookingSuccessMessage(state),
         mainMenu,
       );
       ctx.replyWithDocument({
@@ -701,6 +743,7 @@ bot.action('finish_selection', async (ctx) => {
       messages.push('Не удалось определить выбранные мероприятия. Начните заново.')
     }
 
+    messages.push(await createCurrentBookingsMessage(state));
     await ctx.editMessageText(messages.join(`\n\n`))
     ctx.session = {};
 
