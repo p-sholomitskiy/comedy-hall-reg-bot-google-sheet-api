@@ -15,6 +15,31 @@ import {
   END_COL,
 } from './sheets.constants.js';
 
+export async function getCurrentBookingsByPhone(
+  spreadsheetId: string,
+  sheets: ISheetData[],
+  phone: string,
+) {
+  if (sheets.length === 0) return [];
+
+  const response = await sheetsClient.spreadsheets.values.batchGet({
+    spreadsheetId,
+    ranges: sheets.map(
+      (sheet) => `${escapeSheetTitle(sheet.sheetName)}!C${BOOKINGS_START_ROW}:H`,
+    ),
+  });
+
+  return sheets.flatMap((sheet, index) => {
+    const rows = response.data.valueRanges?.[index]?.values ?? [];
+    return rows.filter((row) => String(row[1] ?? '') === phone).map((row) => ({
+      title: sheet.partyName || sheet.sheetName,
+      places: Number(row[2] ?? 0),
+      hookah: row[4] === 1 || row[4] === '1',
+      tableForTwo: row[5] === 1 || row[5] === '1',
+    }));
+  });
+}
+
 export async function getSheetsProperties(spreadsheetId: string) {
   const response = await sheetsClient.spreadsheets.get({
     spreadsheetId,

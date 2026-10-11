@@ -1,8 +1,9 @@
 import 'dotenv/config';
+import { createLogEventRecord } from '../utils/logger.util.js';
 import { Telegraf, Markup, session } from 'telegraf';
 import { bookingDeletedResponses, bookingsFoundResponses, bookingSuccessMessages, bookingUpdatedResponses, finalSuccessMessage, incorrectNameResponses, incorrectPhoneResponses, incorrectSeatsResponses, nameRequestMessages, noAvailableSeatsMessages, noBookingsResponses, noEventSelectedMessages, phoneRequestMessages, seatsRequestMessages, selectEventMessages, welcomeMessage, zeroSeatsMessages, } from '../api/messages.api.js';
 import { getRandomMessage, validatePositiveNumber, validateGuestName, validatePhoneNumber, updateBookingRows, addNewBooking, deleteBookingRow, filterByXMarkInPartyName, } from '../api/bookings.api.js';
-import { getSheetsProperties, getAllSheetsData, } from '../sheets/sheets.repo.js';
+import { getSheetsProperties, getAllSheetsData, getCurrentBookingsByPhone, } from '../sheets/sheets.repo.js';
 //helpers
 // === Inline клавиатура с галочками ===
 function createInlineKeyboard(optionsMap, selectedOptions) {
@@ -15,6 +16,40 @@ function createInlineKeyboard(optionsMap, selectedOptions) {
         { text: '‼️ Завершить выбор ‼️', callback_data: 'finish_selection' },
     ]);
     return { reply_markup: { inline_keyboard: inlineKeyboard } };
+}
+async function createCurrentBookingsMessage(state) {
+    try {
+        if (!state.phone || !state.allTablesData) {
+            throw new Error('Missing booking context');
+        }
+        const bookings = await getCurrentBookingsByPhone(SPREADSHEET_ID, state.allTablesData, state.phone);
+        if (bookings.length === 0)
+            return 'У вас нет актуальных бронирований.';
+        const entries = bookings.map((booking) => {
+            const places = booking.places;
+            const word = places % 10 === 1 && places % 100 !== 11
+                ? 'место'
+                : places % 10 >= 2 && places % 10 <= 4
+                    && (places % 100 < 12 || places % 100 > 14) ? 'места' : 'мест';
+            return `• ${booking.title} — ${places} ${word}\n  Кальян: ${booking.hookah ? 'да' : 'нет'}\n  Столик на двоих: ${booking.tableForTwo ? 'да' : 'нет'}`;
+        });
+        return `Ваши актуальные брони:\n${entries.join('\n\n')}`;
+    }
+    catch (error) {
+        createLogEventRecord({
+            event: 'booking.summary.failed',
+            fields: { errorType: error instanceof Error ? error.name : 'UnknownError' },
+            level: 'warn',
+        });
+        return 'Не удалось загрузить актуальный список бронирований. Нажмите «Проверить бронь».';
+    }
+}
+async function createBookingSuccessMessage(state) {
+    return [
+        getRandomMessage(bookingSuccessMessages),
+        await createCurrentBookingsMessage(state),
+        finalSuccessMessage,
+    ].join('\n\n');
 }
 // --- Конфигурация
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -266,6 +301,7 @@ bot.on('text', async (ctx) => {
                     if (messages.length === 0) {
                         messages.push('Не удалось определить выбранные мероприятия. Начните заново.');
                     }
+                    messages.push(await createCurrentBookingsMessage(state));
                     await ctx.reply(messages.join('\n\n'));
                     ctx.session = {};
                 }
@@ -331,7 +367,7 @@ bot.on('text', async (ctx) => {
             try {
                 await addNewBooking(SPREADSHEET_ID, ctx, state);
                 ctx.replyWithSticker('CAACAgIAAxkBAAIJ_mdEY7JQtx_hqkGl5023DkZ9pWdYAAIMYgACuyMYShJp1N-PPHrRNgQ');
-                ctx.reply(`${getRandomMessage(bookingSuccessMessages)}\n\n${finalSuccessMessage}`, mainMenu);
+                ctx.reply(await createBookingSuccessMessage(state), mainMenu);
                 ctx.replyWithDocument({
                     source: 'assets/rules.pdf',
                     filename: 'Правила посещения клуба.pdf',
@@ -379,13 +415,14 @@ bot.action(/hookah_(yes|no)/, async (ctx) => {
             if (messages.length === 0) {
                 messages.push('Не удалось определить выбранные мероприятия. Начните заново.');
             }
+            messages.push(await createCurrentBookingsMessage(state));
             await ctx.reply(messages.join('\n\n'));
             ctx.session = {};
         }
         else {
             await addNewBooking(SPREADSHEET_ID, ctx, state);
             ctx.replyWithSticker('CAACAgIAAxkBAAIJ_mdEY7JQtx_hqkGl5023DkZ9pWdYAAIMYgACuyMYShJp1N-PPHrRNgQ');
-            ctx.reply(`${getRandomMessage(bookingSuccessMessages)}\n\n${finalSuccessMessage}`, mainMenu);
+            ctx.reply(await createBookingSuccessMessage(state), mainMenu);
             ctx.replyWithDocument({
                 source: 'assets/rules.pdf',
                 filename: 'Правила посещения клуба.pdf',
@@ -448,13 +485,14 @@ bot.action(/table_(yes|no)/, async (ctx) => {
             if (messages.length === 0) {
                 messages.push('Не удалось определить выбранные мероприятия. Начните заново.');
             }
+            messages.push(await createCurrentBookingsMessage(state));
             await ctx.reply(messages.join('\n\n'));
             ctx.session = {};
         }
         else {
             await addNewBooking(SPREADSHEET_ID, ctx, state);
             ctx.replyWithSticker('CAACAgIAAxkBAAIJ_mdEY7JQtx_hqkGl5023DkZ9pWdYAAIMYgACuyMYShJp1N-PPHrRNgQ');
-            ctx.reply(`${getRandomMessage(bookingSuccessMessages)}\n\n${finalSuccessMessage}`, mainMenu);
+            ctx.reply(await createBookingSuccessMessage(state), mainMenu);
             ctx.replyWithDocument({
                 source: 'assets/rules.pdf',
                 filename: 'Правила посещения клуба.pdf',
@@ -509,6 +547,7 @@ bot.action('finish_selection', async (ctx) => {
         if (messages.length === 0) {
             messages.push('Не удалось определить выбранные мероприятия. Начните заново.');
         }
+        messages.push(await createCurrentBookingsMessage(state));
         await ctx.editMessageText(messages.join(`\n\n`));
         ctx.session = {};
         return;
