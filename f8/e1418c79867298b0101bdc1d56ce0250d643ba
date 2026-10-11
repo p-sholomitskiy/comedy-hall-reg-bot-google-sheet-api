@@ -1,0 +1,52 @@
+src/sheets/sheets.repo.ts
+  s_72986fa20a84fc::t_21de3679864ee2 18-42
+src/bot/bot.service.ts
+  s_72986fa20a84fc::t_c0a8d4a3a2f9d0 2,37,60-89,91,94,424,510,572,582,664,674,746
+  s_72986fa20a84fc::t_80651d8970511b 3,90,92-93,95-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.61",
+  "base_commit_sha": "f8e1418c79867298b0101bdc1d56ce0250d643ba",
+  "prompts": {},
+  "sessions": {
+    "s_72986fa20a84fc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a12655-f7fe-7cd1-9f31-d3d075d872e9",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Pavel <pshalamitski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "gpt-6.1-sol",
+          "input_tokens": 77196,
+          "output_tokens": 4242,
+          "cache_read_tokens": 1389696,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 0,
+          "assistant_messages": 20,
+          "turns": 15,
+          "ai_wall_ms": 182056,
+          "first_ts": "2026-10-10T16:58:43.370Z",
+          "last_ts": "2026-10-11T13:20:11.473Z",
+          "session_total_output_tokens": 15901
+        }
+      ],
+      "tools": [
+        {
+          "tool": "exec",
+          "model": "gpt-6.1-sol",
+          "calls": 6,
+          "result_chars": 16368,
+          "result_input_tokens": 8298,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 0,
+          "call_output_tokens": 2394
+        }
+      ],
+      "accepted_lines": 74,
+      "overridden_lines": 0
+    }
+  }
+}
