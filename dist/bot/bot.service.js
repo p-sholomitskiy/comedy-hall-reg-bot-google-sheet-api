@@ -579,4 +579,20 @@ bot.catch((err, ctx) => {
     console.error('🚨 Глобальная ошибка в боте:', err);
     ctx.reply('⚠️ Что-то пошло не так при соединении с сервером. Попробуйте еще раз пожалуйста.');
 });
-bot.launch().then(() => console.log('Бот запущен 🚀'));
+bot.launch()
+    .then(() => console.log('Бот запущен 🚀'))
+    .catch((error) => {
+    console.error('Ошибка запуска бота:', error);
+    process.exitCode = 1;
+});
+const stopBot = (signal) => {
+    try {
+        bot.stop(signal);
+        console.log(`Бот остановлен: ${signal}`);
+    }
+    catch (error) {
+        console.error('Ошибка остановки бота:', error);
+    }
+};
+process.once('SIGINT', () => stopBot('SIGINT'));
+process.once('SIGTERM', () => stopBot('SIGTERM'));

@@ -785,4 +785,21 @@ bot.catch((err, ctx) => {
   );
 });
 
-bot.launch().then(() => console.log('Бот запущен 🚀'));
+bot.launch()
+  .then(() => console.log('Бот запущен 🚀'))
+  .catch((error: unknown) => {
+    console.error('Ошибка запуска бота:', error);
+    process.exitCode = 1;
+  });
+
+const stopBot = (signal: 'SIGINT' | 'SIGTERM'): void => {
+  try {
+    bot.stop(signal);
+    console.log(`Бот остановлен: ${signal}`);
+  } catch (error) {
+    console.error('Ошибка остановки бота:', error);
+  }
+};
+
+process.once('SIGINT', () => stopBot('SIGINT'));
+process.once('SIGTERM', () => stopBot('SIGTERM'));
