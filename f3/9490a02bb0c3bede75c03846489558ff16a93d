@@ -1,0 +1,134 @@
+src/sheets/sheets.repo.ts
+  s_d7ffdd3bd6c73e::t_c6635e22e12c16 39
+  s_71d1f335e4a713::t_92316586fc5c6f 40
+src/bot/bot.service.ts
+  s_d7ffdd3bd6c73e::t_bd3ea443a9ef18 80-83,88-90
+  s_71d1f335e4a713::t_3a1673ffbe762c 84-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "f39490a02bb0c3bede75c03846489558ff16a93d",
+  "prompts": {},
+  "sessions": {
+    "s_71d1f335e4a713": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7d46197b-ee9e-4a52-b631-6ddb4d895003",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Pavel <pshalamitski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 36,
+          "output_tokens": 10254,
+          "cache_read_tokens": 693472,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 94268,
+          "assistant_messages": 12,
+          "turns": 0,
+          "ai_wall_ms": 42166,
+          "first_ts": "2026-11-16T15:54:02.701Z",
+          "last_ts": "2026-11-16T15:58:37.082Z",
+          "session_total_output_tokens": 10254
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 3,
+          "result_chars": 3925,
+          "result_input_tokens": 4,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 2293,
+          "call_output_tokens": 1130
+        },
+        {
+          "tool": "Edit",
+          "model": "claude-opus-5-5",
+          "calls": 2,
+          "result_chars": 140,
+          "result_input_tokens": 0,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 0,
+          "call_output_tokens": 1556
+        },
+        {
+          "tool": "Read",
+          "model": "claude-opus-5-5",
+          "calls": 1,
+          "result_chars": 77951,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 36025,
+          "call_output_tokens": 204
+        }
+      ],
+      "context_at_start_tokens": 38148,
+      "accepted_lines": 5,
+      "overridden_lines": 0
+    },
+    "s_d7ffdd3bd6c73e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ff137409-b7d5-4a83-a67c-98ad3c5d84c7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Pavel <pshalamitski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 28,
+          "output_tokens": 10501,
+          "cache_read_tokens": 524602,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 112354,
+          "assistant_messages": 10,
+          "turns": 0,
+          "ai_wall_ms": 37753,
+          "first_ts": "2026-11-12T11:56:27.811Z",
+          "last_ts": "2026-11-12T12:07:28.429Z",
+          "session_total_output_tokens": 10501
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 3,
+          "result_chars": 3967,
+          "result_input_tokens": 4,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 2354,
+          "call_output_tokens": 1573
+        },
+        {
+          "tool": "Edit",
+          "model": "claude-opus-5-5",
+          "calls": 2,
+          "result_chars": 140,
+          "result_input_tokens": 0,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 0,
+          "call_output_tokens": 2378
+        },
+        {
+          "tool": "Read",
+          "model": "claude-opus-5-5",
+          "calls": 1,
+          "result_chars": 76927,
+          "result_input_tokens": 2,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 35488,
+          "call_output_tokens": 175
+        }
+      ],
+      "context_at_start_tokens": 39628,
+      "accepted_lines": 8,
+      "overridden_lines": 0
+    }
+  },
+  "install_id": "f153ab8a-0c7c-41dd-864a-e3d80fda25b4"
+}
