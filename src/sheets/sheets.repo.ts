@@ -36,6 +36,8 @@ export async function getCurrentBookingsByPhone(
       places: Number(row[2] ?? 0),
       hookah: row[4] === 1 || row[4] === '1',
       tableForTwo: row[5] === 1 || row[5] === '1',
+      suggestTable: sheet.suggestTable,
+      availableTables: sheet.availableTables,
     }));
   });
 }
