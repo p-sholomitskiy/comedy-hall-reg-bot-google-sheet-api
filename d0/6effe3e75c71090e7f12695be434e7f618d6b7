@@ -1,0 +1,25 @@
+src/bot/bot.service.ts
+  s_71d1f335e4a713::t_ecb19ef1f1b3f0 379-384
+  s_71d1f335e4a713::t_b369927f75be69 250-252
+src/bot/bot.types.ts
+  s_71d1f335e4a713::t_088ff2773e447d 14-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "d06effe3e75c71090e7f12695be434e7f618d6b7",
+  "prompts": {},
+  "sessions": {
+    "s_71d1f335e4a713": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7d46197b-ee9e-4a52-b631-6ddb4d895003",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Pavel <pshalamitski@marfa-tech.com>",
+      "accepted_lines": 11,
+      "overridden_lines": 0
+    }
+  },
+  "install_id": "f153ab8a-0c7c-41dd-864a-e3d80fda25b4"
+}
