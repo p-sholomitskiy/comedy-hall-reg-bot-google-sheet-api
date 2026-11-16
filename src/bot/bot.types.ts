@@ -11,6 +11,8 @@ export interface SheetOption {
   suggestTable: boolean;
   suggestHookah: boolean;
   tableCost: number;
+  // У пользователя уже есть столик на двоих на этом мероприятии (для правки брони)
+  hasTableForTwo?: boolean;
 }
 
 export interface UserSession {

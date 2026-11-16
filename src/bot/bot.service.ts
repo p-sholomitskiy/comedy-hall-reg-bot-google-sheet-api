@@ -247,6 +247,9 @@ bot.on('text', async (ctx) => {
           suggestHookah: sheet.suggestHookah,
           tableCost: sheet.tableCost,
           tables: sheet.availableTables,
+          hasTableForTwo: sheet.bookings.some(
+            (record) => record.phone === state.phone && record.isForTwo,
+          ),
         });
       });
 
@@ -373,7 +376,12 @@ bot.on('text', async (ctx) => {
             const option = state.optionsForSelect?.get(sheetId);
             tableCost = option?.tableCost;
 
-            return option && option.suggestTable && option.tables > 0;
+            // Свой текущий столик пользователь может сохранить, даже если свободных не осталось
+            return (
+              option &&
+              option.suggestTable &&
+              (option.tables > 0 || option.hasTableForTwo)
+            );
           });
           if (canSuggestTable) {
             state.step = 'input_table';
