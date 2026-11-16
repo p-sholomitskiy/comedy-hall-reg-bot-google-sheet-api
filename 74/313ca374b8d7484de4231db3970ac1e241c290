@@ -1,0 +1,60 @@
+src/sheets/sheets.repo.ts
+  s_71d1f335e4a713::t_0b39040dd75436 25-26,29-36,38,41-44,50-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.0.68",
+  "base_commit_sha": "74313ca374b8d7484de4231db3970ac1e241c290",
+  "prompts": {},
+  "sessions": {
+    "s_71d1f335e4a713": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7d46197b-ee9e-4a52-b631-6ddb4d895003",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Pavel <pshalamitski@marfa-tech.com>",
+      "usage": [
+        {
+          "model": "claude-opus-5-5",
+          "input_tokens": 94,
+          "output_tokens": 28947,
+          "cache_read_tokens": 2678009,
+          "cache_write_5m_tokens": 0,
+          "cache_write_1h_tokens": 72762,
+          "assistant_messages": 30,
+          "turns": 0,
+          "ai_wall_ms": 61091,
+          "first_ts": "2026-11-16T15:58:42.270Z",
+          "last_ts": "2026-11-16T16:23:31.654Z",
+          "session_total_output_tokens": 39201
+        }
+      ],
+      "tools": [
+        {
+          "tool": "Bash",
+          "model": "claude-opus-5-5",
+          "calls": 8,
+          "result_chars": 1812,
+          "result_input_tokens": 15,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 3932,
+          "call_output_tokens": 6432
+        },
+        {
+          "tool": "Edit",
+          "model": "claude-opus-5-5",
+          "calls": 4,
+          "result_chars": 615,
+          "result_input_tokens": 1,
+          "result_cache_write_5m_tokens": 0,
+          "result_cache_write_1h_tokens": 3941,
+          "call_output_tokens": 6762
+        }
+      ],
+      "accepted_lines": 17,
+      "overridden_lines": 0
+    }
+  },
+  "install_id": "f153ab8a-0c7c-41dd-864a-e3d80fda25b4"
+}
