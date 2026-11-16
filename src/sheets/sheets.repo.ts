@@ -22,22 +22,33 @@ export async function getCurrentBookingsByPhone(
 ) {
   if (sheets.length === 0) return [];
 
+  // Per sheet: bookings + fresh table option/availability (state data may be stale)
+  const RANGES_PER_SHEET = 3;
   const response = await sheetsClient.spreadsheets.values.batchGet({
     spreadsheetId,
-    ranges: sheets.map(
-      (sheet) => `${escapeSheetTitle(sheet.sheetName)}!C${BOOKINGS_START_ROW}:H`,
-    ),
+    ranges: sheets.flatMap((sheet) => {
+      const name = escapeSheetTitle(sheet.sheetName);
+      return [
+        `${name}!C${BOOKINGS_START_ROW}:H`,
+        `${name}!${DataCells.SUGGEST_TABLE}`,
+        `${name}!${DataCells.AVAILABLE_TABLES}`,
+      ];
+    }),
   });
+  const valueRanges = response.data.valueRanges ?? [];
 
   return sheets.flatMap((sheet, index) => {
-    const rows = response.data.valueRanges?.[index]?.values ?? [];
+    const base = index * RANGES_PER_SHEET;
+    const rows = valueRanges[base]?.values ?? [];
+    const suggestTable = valueRanges[base + 1]?.values?.[0]?.[0] === 'TRUE';
+    const availableTables = Number(valueRanges[base + 2]?.values?.[0]?.[0] ?? 0);
     return rows.filter((row) => String(row[1] ?? '') === phone).map((row) => ({
       title: sheet.partyName || sheet.sheetName,
       places: Number(row[2] ?? 0),
       hookah: row[4] === 1 || row[4] === '1',
       tableForTwo: row[5] === 1 || row[5] === '1',
-      suggestTable: sheet.suggestTable,
-      availableTables: sheet.availableTables,
+      suggestTable,
+      availableTables,
     }));
   });
 }
