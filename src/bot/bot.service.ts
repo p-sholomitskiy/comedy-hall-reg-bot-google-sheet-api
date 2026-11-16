@@ -18,6 +18,8 @@ import {
   phoneRequestMessages,
   seatsRequestMessages,
   selectEventMessages,
+  tableOfferKeyboard,
+  tableOfferMessage,
   welcomeMessage,
   zeroSeatsMessages,
 } from '../api/messages.api.js';
@@ -75,7 +77,17 @@ async function createCurrentBookingsMessage(state: UserSession): Promise<string>
         ? 'место'
         : places % 10 >= 2 && places % 10 <= 4
           && (places % 100 < 12 || places % 100 > 14) ? 'места' : 'мест';
-      return `• ${booking.title} — ${places} ${word}\n  Кальян: ${booking.hookah ? 'да' : 'нет'}\n  Столик на двоих: ${booking.tableForTwo ? 'да' : 'нет'}`;
+      const lines = [
+        `• ${booking.title} — ${places} ${word}`,
+        `  Кальян: ${booking.hookah ? 'да' : 'нет'}`,
+      ];
+      // Столик на двоих предлагается только при брони на 2 места, включённой опции на листе и наличии свободных столиков
+      const canSuggestTable =
+        booking.suggestTable && booking.availableTables > 0 && places === 2;
+      if (booking.tableForTwo || canSuggestTable) {
+        lines.push(`  Столик на двоих: ${booking.tableForTwo ? 'да' : 'нет'}`);
+      }
+      return lines.join('\n');
     });
     return `Ваши актуальные брони:\n${entries.join('\n\n')}`;
   } catch (error) {
@@ -235,6 +247,9 @@ bot.on('text', async (ctx) => {
           suggestHookah: sheet.suggestHookah,
           tableCost: sheet.tableCost,
           tables: sheet.availableTables,
+          hasTableForTwo: sheet.bookings.some(
+            (record) => record.phone === state.phone && record.isForTwo,
+          ),
         });
       });
 
@@ -361,22 +376,16 @@ bot.on('text', async (ctx) => {
             const option = state.optionsForSelect?.get(sheetId);
             tableCost = option?.tableCost;
 
-            return option && option.suggestTable && option.tables > 0;
+            // Свой текущий столик пользователь может сохранить, даже если свободных не осталось
+            return (
+              option &&
+              option.suggestTable &&
+              (option.tables > 0 || option.hasTableForTwo)
+            );
           });
           if (canSuggestTable) {
             state.step = 'input_table';
-            return ctx.reply(
-              `Желаете расположиться за столиком только вдвоём? 
-Оплата в таком случае — ${tableCost} рублей за двоих. 🙌`,
-              {
-                reply_markup: {
-                  inline_keyboard: [
-                    [{ text: 'Да', callback_data: 'table_yes' }],
-                    [{ text: 'Нет', callback_data: 'table_no' }],
-                  ],
-                },
-              },
-            );
+            return ctx.reply(tableOfferMessage(tableCost), tableOfferKeyboard);
           }
         }
         // Проверяем доступность кальяна
@@ -469,18 +478,7 @@ bot.on('text', async (ctx) => {
         });
         if (canSuggestTable) {
           state.step = 'input_table';
-          return ctx.reply(
-            `Желаете расположиться за столиком только вдвоём? 
-Оплата в таком случае — ${tableCost} рублей за двоих. 🙌`,
-            {
-              reply_markup: {
-                inline_keyboard: [
-                  [{ text: 'Да', callback_data: 'table_yes' }],
-                  [{ text: 'Нет', callback_data: 'table_no' }],
-                ],
-              },
-            },
-          );
+          return ctx.reply(tableOfferMessage(tableCost), tableOfferKeyboard);
         }
       }
       // Проверяем доступность кальяна
